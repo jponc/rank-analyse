@@ -13,5 +13,5 @@ bin/
 .dynamodb
 tmp/
 .terraform/
-tarraform.tfstate
-tarraform.tfstate.backup
+terraform.tfstate
+terraform.tfstate.backup
