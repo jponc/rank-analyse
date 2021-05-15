@@ -1,5 +1,5 @@
 variable "environment" {
-  default = "staging"
+  default     = "staging"
   description = "Environment"
 }
 
@@ -13,4 +13,28 @@ variable "aws_profile" {
 
 variable "aws_region" {
   description = "AWS Region"
+}
+
+variable "rds_instance_class" {
+  description = "RDS Instance type"
+}
+
+variable "rds_allocated_storage" {
+  type        = number
+  description = "Allocated storage for RDS instance"
+}
+
+variable "rds_database_name" {
+  type = string
+  description = "RDS database name"
+}
+
+variable "private_subnets_ssm_path" {
+  type        = string
+  description = "SSM Path to Private subnets StringList"
+}
+
+variable "vpc_default_security_group_ssm_path" {
+  type        = string
+  description = "SSM Path to VPC default security group"
 }
