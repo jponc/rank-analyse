@@ -7,3 +7,11 @@ type HealthcheckResponse struct {
 type LambdaTestResponse struct {
 	Out string `json:"out"`
 }
+
+type RunCrawlRequest struct {
+	Keyword string `json:"keyword"`
+}
+
+type RunCrawlResponse struct {
+	Status string `json:"status"`
+}

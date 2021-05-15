@@ -34,10 +34,22 @@ functions:
       - http:
           path: /healthcheck
           method: get
+          authorizer:
+            name: Authoriser
+            resultTtlInSeconds: 0
+
+  RunCrawl:
+    handler: bin/RunCrawl
+    events:
+      - http:
+          path: /run-crawl
+          method: post
 
   LambdaTest:
     handler: bin/LambdaTest
     vpc: ${self:custom.${self:provider.stage}.vpc}
+    environment:
+      DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
     events:
       - http:
           path: /lambda-test
@@ -49,6 +61,7 @@ functions:
 custom:
   env:
     JWT_SECRET: ${ssm:/${self:service}/${self:provider.stage}/JWT_SECRET~true}
+    DB_CONN_URL: ${ssm:/${self:service}/${self:provider.stage}/DB_CONN_URL~true}
   staging:
     vpc:
       securityGroupIds: ${ssm:/uptactics/${self:provider.stage}/DEFAULT_SECURITY_GROUP}

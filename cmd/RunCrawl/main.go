@@ -7,5 +7,5 @@ import (
 
 func main() {
 	service := api.NewService(nil)
-	lambda.Start(service.Healthcheck)
+	lambda.Start(service.RunCrawl)
 }
