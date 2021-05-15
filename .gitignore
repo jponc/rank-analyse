@@ -12,3 +12,6 @@ bin/
 .env
 .dynamodb
 tmp/
+.terraform/
+tarraform.tfstate
+tarraform.tfstate.backup
