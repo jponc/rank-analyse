@@ -1,5 +1,11 @@
 service: rank-analyse
 
+package:
+  exclude:
+  - ./**
+  include:
+  - ./bin/**
+
 provider:
   name: aws
   runtime: go1.x
@@ -23,5 +29,26 @@ functions:
           path: /healthcheck
           method: get
 
+  LambdaTest:
+    handler: bin/LambdaTest
+    vpc: ${self:custom.${self:provider.stage}.vpc}
+    events:
+      - http:
+          path: /lambda-test
+          method: get
+
 custom:
   env:
+  staging:
+    vpc:
+      securityGroupIds:
+        - sg-07fec8101149d1ede
+      subnetIds:
+        - subnet-00fc7306c109428fc
+  production:
+    vpc:
+      securityGroupIds:
+        - sg-0600b9573a9137749
+      subnetIds:
+        - subnet-0ceb34674967187c2
+
