@@ -1,0 +1,30 @@
+service: rank-analyse-migration
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  profile: uptactics
+  memorySize: 128
+  region: us-east-1 # US East 1 (N. Virginia)
+  stage: ${opt:stage, 'staging'}
+  lambdaHashingVersion: "20201221"
+  vpc: ${self:custom.${self:provider.stage}.vpc}
+  environment:
+    DB_CONNECTION_URL: ${self:custom.env.DB_CONN_URL}
+
+functions:
+  UpMigration:
+    handler: migrations.up
+    timeout: 30
+
+custom:
+  env:
+    DB_CONN_URL: ${ssm:/rank-analyse/${self:provider.stage}/DB_CONN_URL~true}
+  staging:
+    vpc:
+      securityGroupIds: ${ssm:/uptactics/${self:provider.stage}/DEFAULT_SECURITY_GROUP}
+      subnetIds: ${ssm:/uptactics/${self:provider.stage}/PRIVATE_SUBNET_IDS~split}
+  production:
+    vpc:
+      securityGroupIds: ${ssm:/uptactics/${self:provider.stage}/DEFAULT_SECURITY_GROUP}
+      subnetIds: ${ssm:/uptactics/${self:provider.stage}/PRIVATE_SUBNET_IDS~split}
