@@ -31,7 +31,7 @@ functions:
 
   LambdaTest:
     handler: bin/LambdaTest
-    # vpc: ${self:custom.${self:provider.stage}.vpc}
+    vpc: ${self:custom.${self:provider.stage}.vpc}
     events:
       - http:
           path: /lambda-test
@@ -42,13 +42,14 @@ custom:
   staging:
     vpc:
       securityGroupIds:
-        - sg-07fec8101149d1ede
+        - sg-0ccb205c68f536ac2
       subnetIds:
-        - subnet-00fc7306c109428fc
+        - subnet-0628f9575f9059627
+        - subnet-0d5ec2eebacf30940
   production:
     vpc:
       securityGroupIds:
-        - sg-0600b9573a9137749
+        - sg-05842fc6e1964a2db
       subnetIds:
-        - subnet-0ceb34674967187c2
-
+        - subnet-054fdbbe3e3323b9b
+        - subnet-099c3beddd054f8f7
