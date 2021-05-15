@@ -31,7 +31,7 @@ functions:
 
   LambdaTest:
     handler: bin/LambdaTest
-    vpc: ${self:custom.${self:provider.stage}.vpc}
+    # vpc: ${self:custom.${self:provider.stage}.vpc}
     events:
       - http:
           path: /lambda-test
