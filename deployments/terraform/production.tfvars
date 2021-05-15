@@ -6,7 +6,7 @@ aws_region   = "us-east-1"
 # RDS
 rds_instance_class    = "db.t3.small"
 rds_allocated_storage = 40
-rds_database_name = "mydatabase"
+rds_database_name     = "mydatabase"
 
 # VPC
 private_subnets_ssm_path            = "/uptactics/production/PRIVATE_SUBNET_IDS"
