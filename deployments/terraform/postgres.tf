@@ -1,5 +1,6 @@
 resource "random_string" "postgres_password" {
-  length = 16
+  length = 30
+  special = false
 }
 
 resource "aws_db_subnet_group" "postgres_subnet_group" {
