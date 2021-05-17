@@ -1,10 +1,9 @@
-const { getClient } = require("./pg_client");
+const { client } = require("./pg_client");
 const Umzug = require('umzug');
 const fs = require('fs');
 
 module.exports = {
-  up: async (event, context) => {
-    const client = getClient();
+  up: async () => {
     await client.connect();
 
     const migrationStorePath = '/tmp/migrations.json';
@@ -39,14 +38,15 @@ module.exports = {
       return async (name) => {
         console.log(`${name} migrated`);
         try {
-          await client.query(`INSERT INTO migration (name) VALUES('${name}.js')`);
+          const migrationQueryInsert = `INSERT INTO migration (name) VALUES('${name}.js')`;
+          console.log(migrationQueryInsert);
+          await client.query(migrationQueryInsert);
           console.log(`${name} inserted into migration table`);
         } catch (error) {
           console.log(error);
           console.error(`${name} could not be inserted to migration table`);
           throw new Error("failed!");
         }
-        await client.end();
       };
     }
     // When umzug finished to execute a migration file, call addMigration
@@ -55,12 +55,14 @@ module.exports = {
     try {
       const result = await umzug.up()
       console.log(`Migration completed: ${JSON.stringify(result)}`);
-      await client.clean();
     } catch (err) {
-      await client.clean();
       throw err;
     }
 
+    // This is a hack to ensure the last migration has been inserted
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+    await delay(3000) /// waiting 3 second.
+    await client.end();
   }
 }
 

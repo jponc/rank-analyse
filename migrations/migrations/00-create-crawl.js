@@ -1,10 +1,7 @@
-const { getClient } = require("../pg_client");
+const { client } = require("../pg_client");
 
 module.exports = {
   up: async () => {
-    const client = getClient();
-
-    await client.connect();
     await client.query(`
       CREATE TABLE crawl
         (
@@ -17,15 +14,10 @@ module.exports = {
            PRIMARY KEY(id)
         );
     `);
-
-    await client.clean();
   },
   down: async () => {
-    await client.connect();
     await client.query(`
       DROP TABLE crawl;
     `);
-
-    await client.clean();
   },
 }

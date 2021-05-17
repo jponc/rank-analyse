@@ -1,10 +1,7 @@
-const { getClient } = require("../pg_client");
+const { client } = require("../pg_client");
 
 module.exports = {
   up: async () => {
-    const client = getClient();
-
-    await client.connect();
     await client.query(`
       CREATE TABLE extract_info
         (
@@ -18,15 +15,10 @@ module.exports = {
            CONSTRAINT fk_result FOREIGN KEY(result_id) REFERENCES result(id)
         );
     `);
-
-    await client.clean();
   },
   down: async () => {
-    await client.connect();
     await client.query(`
       DROP TABLE extract_info;
     `);
-
-    await client.clean();
   },
 }

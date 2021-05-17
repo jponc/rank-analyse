@@ -1,12 +1,8 @@
-const ServerlessClient = require('serverless-postgres')
+const { Client } = require('pg')
+const client = new Client({
+  connectionString: process.env.DB_CONNECTION_URL
+})
 
 module.exports = {
-  client: new ServerlessClient({
-    connectionString: process.env.DB_CONNECTION_URL
-  }),
-  getClient: () => {
-    return new ServerlessClient({
-      connectionString: process.env.DB_CONNECTION_URL
-    })
-  }
+  client: client,
 };
