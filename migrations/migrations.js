@@ -62,7 +62,6 @@ module.exports = {
     // This is a hack to ensure the last migration has been inserted
     const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
     await delay(3000) /// waiting 3 second.
-    await client.end();
   }
 }
 

@@ -3,12 +3,11 @@ const { client } = require("../pg_client");
 module.exports = {
   up: async () => {
     await client.query(`
-      CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+      ALTER TABLE result ALTER COLUMN title TYPE TEXT;
+      ALTER TABLE result ALTER COLUMN link TYPE TEXT;
     `);
   },
   down: async () => {
-    await client.query(`
-      DROP EXTENSION "uuid-ossp";
-    `)
+    console.log("cannot rollback");
   },
 }
