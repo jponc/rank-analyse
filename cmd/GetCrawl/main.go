@@ -26,5 +26,5 @@ func main() {
 	}
 
 	service := api.NewService(dbRepository, nil)
-	lambda.Start(service.LambdaTest)
+	lambda.Start(service.GetCrawl)
 }
