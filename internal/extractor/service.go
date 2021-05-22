@@ -62,6 +62,11 @@ func (s *Service) ResultCreatedExtractPageInfo(ctx context.Context, snsEvent eve
 	}
 
 	if result.Link == "" {
+		// mark as done if there's no link
+		err = s.repository.MarkCrawlAsDone(ctx, result.CrawlID)
+		if err != nil {
+			log.Fatalf("error marking crawl as done: %v", err)
+		}
 		log.Errorf("can't extract for result %s because there's no link specified", result.ID)
 		return
 	}
@@ -82,6 +87,26 @@ func (s *Service) ResultCreatedExtractPageInfo(ctx context.Context, snsEvent eve
 	err = s.repository.CreateExtractLinks(ctx, result.ID, scrapeResult.Links)
 	if err != nil {
 		log.Fatalf("error creating extract links: %v", err)
+	}
+
+	// Mark as done
+	err = s.repository.MarkResultAsDone(ctx, result.ID)
+	if err != nil {
+		log.Fatalf("error marking result as done: %v", err)
+	}
+
+	// Check done
+	isDone, err := s.repository.IsAllCrawlResultsDone(ctx, result.CrawlID)
+	if err != nil {
+		log.Fatalf("error getting is done: %v", err)
+	}
+
+	// mark crawl as done & send message about finished crawl
+	if isDone {
+		err = s.repository.MarkCrawlAsDone(ctx, result.CrawlID)
+		if err != nil {
+			log.Fatalf("error marking crawl as done: %v", err)
+		}
 	}
 
 	log.Infof("finished extracting %s (%s)", result.ID.String(), result.Link)

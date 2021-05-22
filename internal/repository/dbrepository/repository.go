@@ -138,6 +138,10 @@ func (r *Repository) CreateExtractLinks(ctx context.Context, resultID uuid.UUID,
 		return fmt.Errorf("dbClient not initialised")
 	}
 
+	if len(links) == 0 {
+		return nil
+	}
+
 	// Batch insert links to external_links table
 
 	queryInsert := `INSERT INTO extract_links (result_id, text, link_url) VALUES `
@@ -161,4 +165,65 @@ func (r *Repository) CreateExtractLinks(ctx context.Context, resultID uuid.UUID,
 	}
 
 	return nil
+}
+
+func (r *Repository) MarkResultAsDone(ctx context.Context, resultID uuid.UUID) error {
+	if r.dbClient == nil {
+		return fmt.Errorf("dbClient not initialised")
+	}
+
+	_, err := r.dbClient.Exec(
+		ctx,
+		`UPDATE result SET done = true WHERE id = $1`,
+		resultID,
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed to update result done: %v", err)
+	}
+
+	return nil
+}
+
+func (r *Repository) MarkCrawlAsDone(ctx context.Context, crawlID uuid.UUID) error {
+	if r.dbClient == nil {
+		return fmt.Errorf("dbClient not initialised")
+	}
+
+	_, err := r.dbClient.Exec(
+		ctx,
+		`UPDATE crawl SET done = true WHERE id = $1`,
+		crawlID,
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed to update crawl done: %v", err)
+	}
+
+	return nil
+}
+
+func (r *Repository) IsAllCrawlResultsDone(ctx context.Context, crawlID uuid.UUID) (bool, error) {
+	if r.dbClient == nil {
+		return false, fmt.Errorf("dbClient not initialised")
+	}
+
+	var isDone bool
+
+	err := r.dbClient.GetContext(
+		ctx,
+		&isDone,
+		`
+			SELECT COUNT(id) = 0
+			FROM result
+			WHERE crawl_id = $1 AND done = false
+		`,
+		crawlID,
+	)
+
+	if err != nil {
+		return false, fmt.Errorf("failed to get not done crawl results: %v", err)
+	}
+
+	return isDone, nil
 }
