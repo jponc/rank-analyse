@@ -1,5 +1,5 @@
 resource "random_string" "postgres_password" {
-  length = 30
+  length  = 30
   special = false
 }
 
