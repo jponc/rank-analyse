@@ -103,10 +103,17 @@ func (s *Service) ResultCreatedExtractPageInfo(ctx context.Context, snsEvent eve
 
 	// mark crawl as done & send message about finished crawl
 	if isDone {
-		err = s.repository.MarkCrawlAsDone(ctx, result.CrawlID)
-		if err != nil {
+		if err = s.repository.MarkCrawlAsDone(ctx, result.CrawlID); err != nil {
 			log.Fatalf("error marking crawl as done: %v", err)
 		}
+	}
+
+	// Send CrawlFinished SNS
+	crawlFinishedMsg := eventschema.CrawlFinishedMessage{
+		CrawlID: result.CrawlID.String(),
+	}
+	if err = s.snsClient.Publish(ctx, eventschema.CrawlFinished, crawlFinishedMsg); err != nil {
+		log.Fatalf("failed to publish CrawlFinished for %s", result.CrawlID.String())
 	}
 
 	log.Infof("finished extracting %s (%s)", result.ID.String(), result.Link)

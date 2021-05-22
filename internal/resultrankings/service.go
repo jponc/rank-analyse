@@ -57,6 +57,7 @@ func (s *Service) ProcessKeyword(ctx context.Context, snsEvent events.SNSEvent) 
 		msg.Keyword,
 		msg.SearchEngine,
 		msg.Device,
+		msg.Email,
 	)
 
 	if err != nil {
@@ -90,6 +91,11 @@ func (s *Service) ProcessKeyword(ctx context.Context, snsEvent events.SNSEvent) 
 	// Iterate all result items and store to database
 	for _, item := range *resultItems {
 		// Store ResultItem to DB
+
+		// Don't create a Result if there's no link
+		if item.ItemURL == "" {
+			continue
+		}
 
 		result, err := s.repository.CreateResult(ctx, crawl.ID, item.ItemURL, item.Title, item.Description, item.Position)
 		if err != nil {

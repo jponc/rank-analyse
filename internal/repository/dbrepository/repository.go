@@ -26,7 +26,7 @@ func NewRepository(dbClient *postgres.Client) (*Repository, error) {
 	return r, nil
 }
 
-func (r *Repository) CreateCrawl(ctx context.Context, keyword, searchEngine, device string) (*types.Crawl, error) {
+func (r *Repository) CreateCrawl(ctx context.Context, keyword, searchEngine, device, email string) (*types.Crawl, error) {
 	if r.dbClient == nil {
 		return nil, fmt.Errorf("dbClient not initialised")
 	}
@@ -37,11 +37,11 @@ func (r *Repository) CreateCrawl(ctx context.Context, keyword, searchEngine, dev
 		ctx,
 		&id,
 		`
-			INSERT INTO crawl (keyword, search_engine, device)
-			VALUES ($1, $2, $3)
+			INSERT INTO crawl (keyword, search_engine, device, email)
+			VALUES ($1, $2, $3, $4)
 			RETURNING id
 		`,
-		keyword, searchEngine, device,
+		keyword, searchEngine, device, email,
 	)
 
 	if err != nil {
@@ -226,4 +226,79 @@ func (r *Repository) IsAllCrawlResultsDone(ctx context.Context, crawlID uuid.UUI
 	}
 
 	return isDone, nil
+}
+
+func (r *Repository) GetCrawlResults(ctx context.Context, crawlID uuid.UUID) (*[]types.Result, error) {
+	if r.dbClient == nil {
+		return nil, fmt.Errorf("dbClient not initialised")
+	}
+
+	var results []types.Result
+
+	err := r.dbClient.SelectContext(
+		ctx,
+		&results,
+		`
+			SELECT *
+			FROM result
+			WHERE crawl_id = $1
+		`,
+		crawlID,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get crawl results: %v", err)
+	}
+
+	return &results, nil
+}
+
+func (r *Repository) GetExtractInfo(ctx context.Context, resultID uuid.UUID) (*types.ExtractInfo, error) {
+	if r.dbClient == nil {
+		return nil, fmt.Errorf("dbClient not initialised")
+	}
+
+	var extractInfo types.ExtractInfo
+
+	err := r.dbClient.GetContext(
+		ctx,
+		&extractInfo,
+		`
+			SELECT *
+			FROM extract_info
+			WHERE result_id = $1
+		`,
+		resultID,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get extract info: %v", err)
+	}
+
+	return &extractInfo, nil
+}
+
+func (r *Repository) GetExtractLinks(ctx context.Context, resultID uuid.UUID) (*[]types.ExtractLink, error) {
+	if r.dbClient == nil {
+		return nil, fmt.Errorf("dbClient not initialised")
+	}
+
+	var extractLinks []types.ExtractLink
+
+	err := r.dbClient.SelectContext(
+		ctx,
+		&extractLinks,
+		`
+			SELECT *
+			FROM extract_links
+			WHERE result_id = $1
+		`,
+		resultID,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to select extract links: %v", err)
+	}
+
+	return &extractLinks, nil
 }

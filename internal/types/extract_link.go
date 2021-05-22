@@ -6,10 +6,10 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-type ExtractInfo struct {
+type ExtractLink struct {
 	ID        uuid.UUID `db:"id"`
 	ResultID  uuid.UUID `db:"result_id"`
-	Title     string    `db:"title"`
-	Content   string    `db:"content"`
+	Text      string    `db:"text"`
+	LinkURL   string    `db:"link_url"`
 	CreatedAt time.Time `db:"created_at"`
 }

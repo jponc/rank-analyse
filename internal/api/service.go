@@ -61,7 +61,7 @@ func (s *Service) RunCrawl(ctx context.Context, request events.APIGatewayProxyRe
 	req := &apischema.RunCrawlRequest{}
 
 	err := json.Unmarshal([]byte(request.Body), req)
-	if err != nil || req.Keyword == "" {
+	if err != nil || req.Keyword == "" || req.Email == "" {
 		log.Errorf("failed to Unmarshal")
 		return lambdaresponses.Respond400(fmt.Errorf("bad request"))
 	}
@@ -70,7 +70,8 @@ func (s *Service) RunCrawl(ctx context.Context, request events.APIGatewayProxyRe
 		Keyword:      req.Keyword,
 		Device:       "desktop",
 		SearchEngine: "google.com",
-		Count:        3,
+		Count:        100,
+		Email:        req.Email,
 	}
 
 	err = s.snsClient.Publish(ctx, eventschema.ProcessKeyword, msg)

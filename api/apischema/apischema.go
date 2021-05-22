@@ -12,6 +12,7 @@ type LambdaTestResponse struct {
 
 type RunCrawlRequest struct {
 	Keyword string `json:"keyword"`
+	Email   string `json:"email"`
 }
 
 type RunCrawlResponse struct {

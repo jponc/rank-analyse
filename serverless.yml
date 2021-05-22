@@ -25,6 +25,16 @@ provider:
       Resource: "*"
       Action:
         - sns:*
+    # S3
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+        - s3:GetObject
+        - s3:ListBucket
+        - s3:ListBucketVersions
+      Resource:
+        - 'arn:aws:s3:::${self:custom.env.S3_RESULTS_BUCKET_NAME}'
+        - 'arn:aws:s3:::${self:custom.env.S3_RESULTS_BUCKET_NAME}/*'
 
 functions:
   # == Authorizers ==
@@ -104,12 +114,24 @@ functions:
       SNS_PREFIX: ${self:custom.env.SNS_PREFIX}
       DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
 
+  CrawlFinishedUploadFileAndNotifyUser:
+    handler: bin/CrawlFinishedUploadFileAndNotifyUser
+    events:
+      - sns: ${self:service}-${self:provider.stage}-CrawlFinished
+    timeout: 120 # 2 Minutes timeout to upload and send email to user
+    vpc: ${self:custom.${self:provider.stage}.vpc}
+    environment:
+      SNS_PREFIX: ${self:custom.env.SNS_PREFIX}
+      DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
+      S3_RESULTS_BUCKET_NAME: ${self:custom.env.S3_RESULTS_BUCKET_NAME}
+
 custom:
   env:
     JWT_SECRET: ${ssm:/${self:service}/${self:provider.stage}/JWT_SECRET~true}
     DB_CONN_URL: ${ssm:/${self:service}/${self:provider.stage}/DB_CONN_URL~true}
     SNS_PREFIX: !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${self:service}-${self:provider.stage}'
     ZENSERP_API_KEY: ${ssm:/${self:service}/${self:provider.stage}/ZENSERP_API_KEY~true}
+    S3_RESULTS_BUCKET_NAME: ${ssm:/${self:service}/${self:provider.stage}/S3_RESULTS_BUCKET_NAME}
 
   staging:
     vpc:
