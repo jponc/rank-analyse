@@ -1,11 +1,15 @@
 package main
 
 import (
+	"time"
+
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/jponc/rank-analyse/internal/extractor"
 	"github.com/jponc/rank-analyse/internal/repository/dbrepository"
+	pkgHttp "github.com/jponc/rank-analyse/pkg/http"
 	"github.com/jponc/rank-analyse/pkg/postgres"
 	"github.com/jponc/rank-analyse/pkg/sns"
+	"github.com/jponc/rank-analyse/pkg/webscraper"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -30,7 +34,10 @@ func main() {
 		log.Fatalf("cannot initialise sns client %v", err)
 	}
 
-	service := extractor.NewService(dbRepository, snsClient)
+	httpClient := pkgHttp.DefaultHTTPClient(time.Duration(1 * time.Minute))
+	scraperClient := webscraper.NewClient(httpClient)
+
+	service := extractor.NewService(dbRepository, snsClient, scraperClient)
 
 	lambda.Start(service.ResultCreatedExtractPageInfo)
 }

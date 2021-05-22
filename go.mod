@@ -3,6 +3,7 @@ module github.com/jponc/rank-analyse
 go 1.16
 
 require (
+	github.com/PuerkitoBio/goquery v1.6.1 // indirect
 	github.com/aws/aws-lambda-go v1.23.0
 	github.com/aws/aws-sdk-go v1.38.40
 	github.com/aws/aws-xray-sdk-go v1.4.0
