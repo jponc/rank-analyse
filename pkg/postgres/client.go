@@ -39,3 +39,7 @@ func (c *Client) SelectContext(ctx context.Context, dest interface{}, query stri
 func (c *Client) Exec(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	return c.db.ExecContext(ctx, query, args...)
 }
+
+func (c *Client) Close() error {
+	return c.db.Close()
+}

@@ -122,4 +122,9 @@ func (s *Service) ProcessKeyword(ctx context.Context, snsEvent events.SNSEvent) 
 	if len(errorMsgs) > 0 {
 		log.Errorf("errors encountered: %s", strings.Join(errorMsgs, "; "))
 	}
+
+	err = s.repository.Close()
+	if err != nil {
+		log.Fatalf("error closing connection: %v", err)
+	}
 }

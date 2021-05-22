@@ -25,6 +25,6 @@ func main() {
 		log.Fatalf("cannot initialise repository: %v", err)
 	}
 
-	service := api.NewService(dbRepository, nil)
+	service := api.NewService(dbRepository, nil, nil)
 	lambda.Start(service.LambdaTest)
 }

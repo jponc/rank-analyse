@@ -302,3 +302,11 @@ func (r *Repository) GetExtractLinks(ctx context.Context, resultID uuid.UUID) (*
 
 	return &extractLinks, nil
 }
+
+func (r *Repository) Close() error {
+	if r.dbClient == nil {
+		return fmt.Errorf("dbClient not initialised")
+	}
+
+	return r.dbClient.Close()
+}

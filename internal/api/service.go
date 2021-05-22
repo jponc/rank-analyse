@@ -12,6 +12,7 @@ import (
 	"github.com/jponc/rank-analyse/api/apischema"
 	"github.com/jponc/rank-analyse/api/eventschema"
 	"github.com/jponc/rank-analyse/internal/repository/dbrepository"
+	"github.com/jponc/rank-analyse/internal/repository/s3repository"
 	"github.com/jponc/rank-analyse/pkg/lambdaresponses"
 	"github.com/jponc/rank-analyse/pkg/sns"
 
@@ -19,14 +20,16 @@ import (
 )
 
 type Service struct {
-	repository *dbrepository.Repository
-	snsClient  *sns.Client
+	repository   *dbrepository.Repository
+	snsClient    *sns.Client
+	s3repository *s3repository.Repository
 }
 
-func NewService(repository *dbrepository.Repository, snsClient *sns.Client) *Service {
+func NewService(repository *dbrepository.Repository, snsClient *sns.Client, s3repository *s3repository.Repository) *Service {
 	s := &Service{
-		repository: repository,
-		snsClient:  snsClient,
+		repository:   repository,
+		snsClient:    snsClient,
+		s3repository: s3repository,
 	}
 
 	return s
@@ -85,9 +88,9 @@ func (s *Service) RunCrawl(ctx context.Context, request events.APIGatewayProxyRe
 	return lambdaresponses.Respond200(apischema.RunCrawlResponse{Status: "OK"})
 }
 
-func (s *Service) GetCrawl(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	if s.repository == nil {
-		log.Errorf("repository not defined")
+func (s *Service) GetCrawlJson(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	if s.s3repository == nil {
+		log.Errorf("s3repository not defined")
 		return lambdaresponses.Respond500()
 	}
 
@@ -97,11 +100,11 @@ func (s *Service) GetCrawl(ctx context.Context, request events.APIGatewayProxyRe
 		return lambdaresponses.Respond500()
 	}
 
-	crawl, err := s.repository.GetCrawl(ctx, crawlId)
+	url, err := s.s3repository.GetCrawlResultsURL(ctx, crawlId)
 	if err != nil {
-		log.Errorf("error when fetching crawl: %v", err)
+		log.Errorf("error when fetching crawl pre-signed url (%s): %v", crawlId, err)
 		return lambdaresponses.Respond500()
 	}
 
-	return lambdaresponses.Respond200(apischema.GetCrawlResponse{Crawl: crawl})
+	return lambdaresponses.Respond302(url)
 }

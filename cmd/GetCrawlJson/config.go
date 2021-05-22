@@ -7,18 +7,25 @@ import (
 
 // Config
 type Config struct {
-	RDSConnectionURL string
+	AWSRegion           string
+	S3ResultsBucketName string
 }
 
 // NewConfig initialises a new config
 func NewConfig() (*Config, error) {
-	rdsConnectionURL, err := getEnv("DB_CONN_URL")
+	awsRegion, err := getEnv("AWS_REGION")
+	if err != nil {
+		return nil, err
+	}
+
+	s3ResultsBucketName, err := getEnv("S3_RESULTS_BUCKET_NAME")
 	if err != nil {
 		return nil, err
 	}
 
 	return &Config{
-		RDSConnectionURL: rdsConnectionURL,
+		AWSRegion:           awsRegion,
+		S3ResultsBucketName: s3ResultsBucketName,
 	}, nil
 }
 

@@ -122,9 +122,15 @@ func (s *Service) CrawlFinishedUploadFileAndNotifyUser(ctx context.Context, snsE
 		log.Fatalf("failed to marshal result datas to JSON: %v", err)
 	}
 
+	// Upload to S3
 	err = s.s3repository.UploadCrawlResults(ctx, crawl.ID, string(resultDatasJson))
 	if err != nil {
 		log.Fatalf("failed to upload results datas to S3: %v", err)
+	}
+
+	err = s.dbrepository.Close()
+	if err != nil {
+		log.Fatalf("error closing connection: %v", err)
 	}
 
 	log.Infof("finished uploading to s3 (%s)", crawl.ID)

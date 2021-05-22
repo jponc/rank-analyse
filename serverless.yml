@@ -92,6 +92,18 @@ functions:
             name: Authoriser
             resultTtlInSeconds: 0
 
+  GetCrawlJson:
+    handler: bin/GetCrawlJson
+    environment:
+      S3_RESULTS_BUCKET_NAME: ${self:custom.env.S3_RESULTS_BUCKET_NAME}
+    events:
+      - http:
+          path: /crawls/{id}
+          method: get
+          parameters:
+            paths:
+              id: true
+
   # == SNS ==
   ProcessKeyword:
     handler: bin/ProcessKeyword

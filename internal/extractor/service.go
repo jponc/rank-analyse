@@ -106,14 +106,19 @@ func (s *Service) ResultCreatedExtractPageInfo(ctx context.Context, snsEvent eve
 		if err = s.repository.MarkCrawlAsDone(ctx, result.CrawlID); err != nil {
 			log.Fatalf("error marking crawl as done: %v", err)
 		}
+
+		// Send CrawlFinished SNS
+		crawlFinishedMsg := eventschema.CrawlFinishedMessage{
+			CrawlID: result.CrawlID.String(),
+		}
+		if err = s.snsClient.Publish(ctx, eventschema.CrawlFinished, crawlFinishedMsg); err != nil {
+			log.Fatalf("failed to publish CrawlFinished for %s", result.CrawlID.String())
+		}
 	}
 
-	// Send CrawlFinished SNS
-	crawlFinishedMsg := eventschema.CrawlFinishedMessage{
-		CrawlID: result.CrawlID.String(),
-	}
-	if err = s.snsClient.Publish(ctx, eventschema.CrawlFinished, crawlFinishedMsg); err != nil {
-		log.Fatalf("failed to publish CrawlFinished for %s", result.CrawlID.String())
+	err = s.repository.Close()
+	if err != nil {
+		log.Fatalf("error closing connection: %v", err)
 	}
 
 	log.Infof("finished extracting %s (%s)", result.ID.String(), result.Link)

@@ -19,6 +19,6 @@ func main() {
 		log.Fatalf("cannot initialise sns client %v", err)
 	}
 
-	service := api.NewService(nil, snsClient)
+	service := api.NewService(nil, snsClient, nil)
 	lambda.Start(service.RunCrawl)
 }
