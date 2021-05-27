@@ -26,6 +26,10 @@ func NewRepository(dbClient *postgres.Client) (*Repository, error) {
 	return r, nil
 }
 
+func (r *Repository) Connect() error {
+	return r.dbClient.Connect()
+}
+
 func (r *Repository) CreateCrawl(ctx context.Context, keyword, searchEngine, device, email string) (*types.Crawl, error) {
 	if r.dbClient == nil {
 		return nil, fmt.Errorf("dbClient not initialised")
@@ -161,20 +165,21 @@ func (r *Repository) CreateExtractLinks(ctx context.Context, resultID uuid.UUID,
 		insertParams...,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to insert extract info: %v", err)
+		return fmt.Errorf("failed to insert extract links: %v", err)
 	}
 
 	return nil
 }
 
-func (r *Repository) MarkResultAsDone(ctx context.Context, resultID uuid.UUID) error {
+func (r *Repository) MarkResultAsDone(ctx context.Context, resultID uuid.UUID, isError bool) error {
 	if r.dbClient == nil {
 		return fmt.Errorf("dbClient not initialised")
 	}
 
 	_, err := r.dbClient.Exec(
 		ctx,
-		`UPDATE result SET done = true WHERE id = $1`,
+		`UPDATE result SET done = true, is_error = $1 WHERE id = $2`,
+		isError,
 		resultID,
 	)
 
@@ -241,7 +246,8 @@ func (r *Repository) GetCrawlResults(ctx context.Context, crawlID uuid.UUID) (*[
 		`
 			SELECT *
 			FROM result
-			WHERE crawl_id = $1
+			WHERE crawl_id = $1 AND done = true AND is_error = false
+			ORDER BY position ASC
 		`,
 		crawlID,
 	)

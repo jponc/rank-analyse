@@ -10,22 +10,26 @@ import (
 )
 
 type Client struct {
-	db     *sqlx.DB
-	TestDB *sqlx.DB
+	db            *sqlx.DB
+	connectionURL string
 }
 
 func NewClient(connectionURL string) (*Client, error) {
-	db, err := sqlx.Connect("postgres", connectionURL)
+	c := &Client{
+		connectionURL: connectionURL,
+	}
+
+	return c, nil
+}
+
+func (c *Client) Connect() error {
+	db, err := sqlx.Connect("postgres", c.connectionURL)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to database: %v", err)
+		return fmt.Errorf("failed to connect to database: %v", err)
 	}
 
-	p := &Client{
-		db:     db,
-		TestDB: db,
-	}
-
-	return p, nil
+	c.db = db
+	return nil
 }
 
 func (c *Client) GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error {

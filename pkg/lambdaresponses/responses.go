@@ -39,7 +39,9 @@ func Respond302(location string) (events.APIGatewayProxyResponse, error) {
 	return events.APIGatewayProxyResponse{
 		StatusCode: 302,
 		Headers: map[string]string{
-			"Location": location,
+			"Location":     location,
+			"Accept":       "application/json",
+			"Content-Type": "application/json",
 		},
 	}, nil
 }

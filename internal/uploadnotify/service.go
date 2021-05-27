@@ -52,6 +52,10 @@ func (s *Service) CrawlFinishedUploadFileAndNotifyUser(ctx context.Context, snsE
 		log.Fatalf("s3repository not defined")
 	}
 
+	if err := s.dbrepository.Connect(); err != nil {
+		log.Fatalf("can't connect to DB")
+	}
+
 	snsMsg := snsEvent.Records[0].SNS.Message
 
 	var msg eventschema.CrawlFinishedMessage

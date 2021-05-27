@@ -43,6 +43,10 @@ func (s *Service) ResultCreatedExtractPageInfo(ctx context.Context, snsEvent eve
 		log.Fatalf("scraperClient not defined")
 	}
 
+	if err := s.repository.Connect(); err != nil {
+		log.Fatalf("can't connect to DB")
+	}
+
 	snsMsg := snsEvent.Records[0].SNS.Message
 
 	var msg eventschema.ResultCreatedMessage
@@ -61,11 +65,13 @@ func (s *Service) ResultCreatedExtractPageInfo(ctx context.Context, snsEvent eve
 		log.Fatalf("failed to get result: %v", err)
 	}
 
+	log.Infof("Processing Result with ID (%s)", resultId.String())
+
 	if result.Link == "" {
 		// mark as done if there's no link
-		err = s.repository.MarkCrawlAsDone(ctx, result.CrawlID)
+		err = s.repository.MarkResultAsDone(ctx, result.ID, true)
 		if err != nil {
-			log.Fatalf("error marking crawl as done: %v", err)
+			log.Fatalf("error marking result as done: %v", err)
 		}
 		log.Errorf("can't extract for result %s because there's no link specified", result.ID)
 		return
@@ -74,23 +80,41 @@ func (s *Service) ResultCreatedExtractPageInfo(ctx context.Context, snsEvent eve
 	// Run scraping
 	scrapeResult, err := s.scraperClient.Scrape(ctx, result.Link)
 	if err != nil {
-		log.Fatalf("error scraping: %v", err)
+		log.Errorf("error scraping (%s): %v", result.ID.String(), err)
+
+		err := s.repository.MarkResultAsDone(ctx, result.ID, true)
+		if err != nil {
+			log.Errorf("error saving result as done but with error: %v", err)
+		}
+		return
 	}
 
 	// Store ExtractInfo
 	err = s.repository.CreateExtractInfo(ctx, result.ID, scrapeResult.Title, scrapeResult.Body)
 	if err != nil {
-		log.Fatalf("error creating extract info: %v", err)
+		log.Errorf("error creating extract info: %v", err)
+
+		err = s.repository.MarkResultAsDone(ctx, result.ID, true)
+		if err != nil {
+			log.Errorf("error saving result as done but with error: %v", err)
+		}
+		return
 	}
 
 	// Store ExtractLinks
 	err = s.repository.CreateExtractLinks(ctx, result.ID, scrapeResult.Links)
 	if err != nil {
-		log.Fatalf("error creating extract links: %v", err)
+		log.Errorf("error creating extract info: %v", err)
+
+		err = s.repository.MarkResultAsDone(ctx, result.ID, true)
+		if err != nil {
+			log.Errorf("error saving result as done but with error: %v", err)
+		}
+		return
 	}
 
 	// Mark as done
-	err = s.repository.MarkResultAsDone(ctx, result.ID)
+	err = s.repository.MarkResultAsDone(ctx, result.ID, false)
 	if err != nil {
 		log.Fatalf("error marking result as done: %v", err)
 	}

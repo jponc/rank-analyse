@@ -1,5 +1,8 @@
 service: rank-analyse
 
+plugins:
+  - serverless-prune-plugin
+
 package:
   exclude:
   - ./**
@@ -65,7 +68,7 @@ functions:
 
   LambdaTest:
     handler: bin/LambdaTest
-    vpc: ${self:custom.${self:provider.stage}.vpc}
+    vpc: ${self:custom.vpc}
     environment:
       DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
     events:
@@ -78,7 +81,7 @@ functions:
 
   GetCrawl:
     handler: bin/GetCrawl
-    vpc: ${self:custom.${self:provider.stage}.vpc}
+    vpc: ${self:custom.vpc}
     environment:
       DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
     events:
@@ -110,7 +113,7 @@ functions:
     events:
       - sns: ${self:service}-${self:provider.stage}-ProcessKeyword
     timeout: 120 # 2 Minutes timeout to fetch data from Zenserp
-    vpc: ${self:custom.${self:provider.stage}.vpc}
+    vpc: ${self:custom.vpc}
     environment:
       ZENSERP_API_KEY: ${self:custom.env.ZENSERP_API_KEY}
       SNS_PREFIX: ${self:custom.env.SNS_PREFIX}
@@ -121,7 +124,8 @@ functions:
     events:
       - sns: ${self:service}-${self:provider.stage}-ResultCreated
     timeout: 120 # 2 Minutes timeout to fetch and extract data
-    vpc: ${self:custom.${self:provider.stage}.vpc}
+    provisionedConcurrency: 20
+    vpc: ${self:custom.vpc}
     environment:
       SNS_PREFIX: ${self:custom.env.SNS_PREFIX}
       DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
@@ -131,7 +135,7 @@ functions:
     events:
       - sns: ${self:service}-${self:provider.stage}-CrawlFinished
     timeout: 120 # 2 Minutes timeout to upload and send email to user
-    vpc: ${self:custom.${self:provider.stage}.vpc}
+    vpc: ${self:custom.vpc}
     environment:
       SNS_PREFIX: ${self:custom.env.SNS_PREFIX}
       DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
@@ -145,11 +149,10 @@ custom:
     ZENSERP_API_KEY: ${ssm:/${self:service}/${self:provider.stage}/ZENSERP_API_KEY~true}
     S3_RESULTS_BUCKET_NAME: ${ssm:/${self:service}/${self:provider.stage}/S3_RESULTS_BUCKET_NAME}
 
-  staging:
-    vpc:
-      securityGroupIds: ${ssm:/uptactics/${self:provider.stage}/DEFAULT_SECURITY_GROUP}
-      subnetIds: ${ssm:/uptactics/${self:provider.stage}/PRIVATE_SUBNET_IDS~split}
-  production:
-    vpc:
-      securityGroupIds: ${ssm:/uptactics/${self:provider.stage}/DEFAULT_SECURITY_GROUP}
-      subnetIds: ${ssm:/uptactics/${self:provider.stage}/PRIVATE_SUBNET_IDS~split}
+  vpc:
+    securityGroupIds: ${ssm:/uptactics/${self:provider.stage}/DEFAULT_SECURITY_GROUP}
+    subnetIds: ${ssm:/uptactics/${self:provider.stage}/PRIVATE_SUBNET_IDS~split}
+
+  prune:
+    automatic: false
+    number: 3

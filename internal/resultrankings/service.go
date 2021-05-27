@@ -44,6 +44,10 @@ func (s *Service) ProcessKeyword(ctx context.Context, snsEvent events.SNSEvent) 
 		log.Fatalf("snsClient not defined")
 	}
 
+	if err := s.repository.Connect(); err != nil {
+		log.Fatalf("can't connect to DB")
+	}
+
 	snsMsg := snsEvent.Records[0].SNS.Message
 
 	var msg eventschema.ProcessKeywordMessage

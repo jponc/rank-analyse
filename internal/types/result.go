@@ -14,5 +14,6 @@ type Result struct {
 	Description string    `db:"description"`
 	Position    int       `db:"position"`
 	Done        bool      `db:"done"`
+	IsError     bool      `db:"is_error"`
 	CreatedAt   time.Time `db:"created_at"`
 }

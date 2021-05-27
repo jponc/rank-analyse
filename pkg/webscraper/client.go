@@ -65,7 +65,7 @@ func (c *Client) Scrape(ctx context.Context, link string) (*ScrapeResult, error)
 	links := []Link{}
 	doc.Find("a[href]").Each(func(index int, item *goquery.Selection) {
 		linkURL, _ := item.Attr("href")
-		text := item.Text()
+		text := strings.TrimSpace(item.Text())
 		links = append(links, Link{
 			Text:    text,
 			LinkURL: linkURL,
