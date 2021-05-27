@@ -8,6 +8,17 @@ resource "aws_db_subnet_group" "postgres_subnet_group" {
   subnet_ids = split(",", data.aws_ssm_parameter.private_subnets_ssm.value)
 }
 
+resource "aws_db_parameter_group" "param_group" {
+  name   = "${var.service_name}-${var.environment}-pg"
+  family = "postgres12"
+
+  parameter {
+    name         = "max_connections"
+    value        = var.rds_max_connections
+    apply_method = "pending-reboot"
+  }
+}
+
 resource "aws_db_instance" "postgres" {
   allocated_storage      = var.rds_allocated_storage
   engine                 = "postgres"
@@ -17,7 +28,7 @@ resource "aws_db_instance" "postgres" {
   name                   = var.rds_database_name
   username               = "postgres"
   password               = random_string.postgres_password.result
-  parameter_group_name   = "default.postgres12"
+  parameter_group_name   = aws_db_parameter_group.param_group.name
   skip_final_snapshot    = true
   db_subnet_group_name   = aws_db_subnet_group.postgres_subnet_group.name
   vpc_security_group_ids = [data.aws_ssm_parameter.vpc_default_security_group_ssm.value]
@@ -26,6 +37,7 @@ resource "aws_db_instance" "postgres" {
     aws_db_subnet_group.postgres_subnet_group,
   ]
 }
+
 
 resource "aws_ssm_parameter" "postgres_db_conn_url_ssm" {
   name  = "/${var.service_name}/${var.environment}/DB_CONN_URL"

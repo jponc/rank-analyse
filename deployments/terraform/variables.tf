@@ -29,6 +29,11 @@ variable "rds_database_name" {
   description = "RDS database name"
 }
 
+variable "rds_max_connections" {
+  type        = number
+  description = "RDS database name"
+}
+
 variable "private_subnets_ssm_path" {
   type        = string
   description = "SSM Path to Private subnets StringList"
