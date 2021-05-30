@@ -7,6 +7,7 @@ import (
 	"github.com/jponc/rank-analyse/internal/uploadnotify"
 	"github.com/jponc/rank-analyse/pkg/postgres"
 	"github.com/jponc/rank-analyse/pkg/s3"
+	"github.com/jponc/rank-analyse/pkg/ses"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -36,7 +37,14 @@ func main() {
 		log.Fatalf("cannot initialise s3Repository: %v", err)
 	}
 
-	service := uploadnotify.NewService(dbRepository, s3Repository)
+	sesClient, err := ses.NewClient(config.AWSRegion)
+	if err != nil {
+		log.Fatalf("cannot initialise ses client %v", err)
+	}
+
+	emailer := uploadnotify.NewEmailer(dbRepository, sesClient, config.APIBaseURL)
+
+	service := uploadnotify.NewService(dbRepository, s3Repository, emailer)
 
 	lambda.Start(service.CrawlFinishedUploadFileAndNotifyUser)
 }

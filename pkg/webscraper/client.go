@@ -46,6 +46,11 @@ func (c *Client) Scrape(ctx context.Context, link string) (*ScrapeResult, error)
 		return nil, fmt.Errorf("status code error: %d %s", res.StatusCode, res.Status)
 	}
 
+	contentType := res.Header.Get("Content-Type")
+	if !strings.HasPrefix(contentType, "text/html") {
+		return nil, fmt.Errorf("content type is not text/html: %s", contentType)
+	}
+
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		log.Fatal(err)

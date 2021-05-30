@@ -32,12 +32,14 @@ type ResultData struct {
 type Service struct {
 	dbrepository *dbrepository.Repository
 	s3repository *s3repository.Repository
+	emailer      *Emailer
 }
 
-func NewService(dbrepository *dbrepository.Repository, s3repository *s3repository.Repository) *Service {
+func NewService(dbrepository *dbrepository.Repository, s3repository *s3repository.Repository, emailer *Emailer) *Service {
 	s := &Service{
 		dbrepository: dbrepository,
 		s3repository: s3repository,
+		emailer:      emailer,
 	}
 
 	return s
@@ -50,6 +52,10 @@ func (s *Service) CrawlFinishedUploadFileAndNotifyUser(ctx context.Context, snsE
 
 	if s.s3repository == nil {
 		log.Fatalf("s3repository not defined")
+	}
+
+	if s.emailer == nil {
+		log.Fatalf("emailer not defined")
 	}
 
 	if err := s.dbrepository.Connect(); err != nil {
@@ -131,11 +137,16 @@ func (s *Service) CrawlFinishedUploadFileAndNotifyUser(ctx context.Context, snsE
 	if err != nil {
 		log.Fatalf("failed to upload results datas to S3: %v", err)
 	}
+	log.Infof("finished uploading to s3 (%s)", crawl.ID)
+
+	// Send email to user to tell them the JSON is already available for download
+	err = s.emailer.Send(ctx, crawl.ID)
+	if err != nil {
+		log.Fatalf("failed to send email to customer (%s): %v", crawl.ID.String(), err)
+	}
 
 	err = s.dbrepository.Close()
 	if err != nil {
 		log.Fatalf("error closing connection: %v", err)
 	}
-
-	log.Infof("finished uploading to s3 (%s)", crawl.ID)
 }

@@ -23,11 +23,12 @@ provider:
     apiGateway: true
     lambda: true
   iamRoleStatements:
-    # Allow all SNS
+    # Allow all SNS and SES
     - Effect: "Allow"
       Resource: "*"
       Action:
         - sns:*
+        - ses:*
     # S3
     - Effect: Allow
       Action:
@@ -124,7 +125,6 @@ functions:
     events:
       - sns: ${self:service}-${self:provider.stage}-ResultCreated
     timeout: 120 # 2 Minutes timeout to fetch and extract data
-    provisionedConcurrency: 20
     vpc: ${self:custom.vpc}
     environment:
       SNS_PREFIX: ${self:custom.env.SNS_PREFIX}
@@ -140,6 +140,7 @@ functions:
       SNS_PREFIX: ${self:custom.env.SNS_PREFIX}
       DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
       S3_RESULTS_BUCKET_NAME: ${self:custom.env.S3_RESULTS_BUCKET_NAME}
+      API_BASE_URL: ${self:custom.env.API_BASE_URL}
 
 custom:
   env:
@@ -148,11 +149,12 @@ custom:
     SNS_PREFIX: !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${self:service}-${self:provider.stage}'
     ZENSERP_API_KEY: ${ssm:/${self:service}/${self:provider.stage}/ZENSERP_API_KEY~true}
     S3_RESULTS_BUCKET_NAME: ${ssm:/${self:service}/${self:provider.stage}/S3_RESULTS_BUCKET_NAME}
+    API_BASE_URL: ${ssm:/${self:service}/${self:provider.stage}/API_BASE_URL}
 
   vpc:
     securityGroupIds: ${ssm:/uptactics/${self:provider.stage}/DEFAULT_SECURITY_GROUP}
     subnetIds: ${ssm:/uptactics/${self:provider.stage}/PRIVATE_SUBNET_IDS~split}
 
   prune:
-    automatic: false
-    number: 3
+    automatic: true
+    number: 10
