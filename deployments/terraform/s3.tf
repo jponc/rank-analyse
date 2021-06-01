@@ -26,13 +26,3 @@ resource "aws_s3_bucket" "results_bucket" {
     Name = local.s3_results_bucket_name
   }
 }
-
-resource "aws_ssm_parameter" "s3_results_bucket_name_ssm" {
-  name  = "/${var.service_name}/${var.environment}/S3_RESULTS_BUCKET_NAME"
-  type  = "String"
-  value = local.s3_results_bucket_name
-
-  depends_on = [
-    aws_s3_bucket.results_bucket,
-  ]
-}

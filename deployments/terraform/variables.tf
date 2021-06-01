@@ -39,6 +39,11 @@ variable "private_subnets_ssm_path" {
   description = "SSM Path to Private subnets StringList"
 }
 
+variable "domain_ssm_value" {
+  type        = string
+  description = "SSM Domain Value"
+}
+
 variable "vpc_default_security_group_ssm_path" {
   type        = string
   description = "SSM Path to VPC default security group"

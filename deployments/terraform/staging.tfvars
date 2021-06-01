@@ -12,3 +12,6 @@ rds_max_connections   = 500
 # VPC
 private_subnets_ssm_path            = "/uptactics/staging/PRIVATE_SUBNET_IDS"
 vpc_default_security_group_ssm_path = "/uptactics/staging/DEFAULT_SECURITY_GROUP"
+
+# Domain
+domain_ssm_value = "api-staging-rankanalyze.appextend.com"
