@@ -3,6 +3,7 @@ package extractor
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	log "github.com/sirupsen/logrus"
@@ -10,6 +11,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/jponc/rank-analyse/api/eventschema"
 	"github.com/jponc/rank-analyse/internal/repository/dbrepository"
+	"github.com/jponc/rank-analyse/internal/types"
 	"github.com/jponc/rank-analyse/pkg/sns"
 	"github.com/jponc/rank-analyse/pkg/webscraper"
 )
@@ -47,6 +49,8 @@ func (s *Service) ResultCreatedExtractPageInfo(ctx context.Context, snsEvent eve
 		log.Fatalf("can't connect to DB")
 	}
 
+	defer s.repository.Close()
+
 	snsMsg := snsEvent.Records[0].SNS.Message
 
 	var msg eventschema.ResultCreatedMessage
@@ -69,7 +73,7 @@ func (s *Service) ResultCreatedExtractPageInfo(ctx context.Context, snsEvent eve
 
 	if result.Link == "" {
 		// mark as done if there's no link
-		err = s.repository.MarkResultAsDone(ctx, result.ID, true)
+		err = s.markResultAsDone(ctx, result, true)
 		if err != nil {
 			log.Fatalf("error marking result as done: %v", err)
 		}
@@ -82,7 +86,7 @@ func (s *Service) ResultCreatedExtractPageInfo(ctx context.Context, snsEvent eve
 	if err != nil {
 		log.Errorf("error scraping (%s): %v", result.ID.String(), err)
 
-		err := s.repository.MarkResultAsDone(ctx, result.ID, true)
+		err := s.markResultAsDone(ctx, result, true)
 		if err != nil {
 			log.Errorf("error saving result as done but with error: %v", err)
 		}
@@ -94,7 +98,7 @@ func (s *Service) ResultCreatedExtractPageInfo(ctx context.Context, snsEvent eve
 	if err != nil {
 		log.Errorf("error creating extract info: %v", err)
 
-		err = s.repository.MarkResultAsDone(ctx, result.ID, true)
+		err = s.markResultAsDone(ctx, result, true)
 		if err != nil {
 			log.Errorf("error saving result as done but with error: %v", err)
 		}
@@ -106,7 +110,7 @@ func (s *Service) ResultCreatedExtractPageInfo(ctx context.Context, snsEvent eve
 	if err != nil {
 		log.Errorf("error creating extract info: %v", err)
 
-		err = s.repository.MarkResultAsDone(ctx, result.ID, true)
+		err = s.markResultAsDone(ctx, result, true)
 		if err != nil {
 			log.Errorf("error saving result as done but with error: %v", err)
 		}
@@ -114,18 +118,27 @@ func (s *Service) ResultCreatedExtractPageInfo(ctx context.Context, snsEvent eve
 	}
 
 	// Mark as done
-	err = s.repository.MarkResultAsDone(ctx, result.ID, false)
+	err = s.markResultAsDone(ctx, result, false)
 	if err != nil {
 		log.Fatalf("error marking result as done: %v", err)
 	}
 
-	// Check done
-	isDone, err := s.repository.IsAllCrawlResultsDone(ctx, result.CrawlID)
+	log.Infof("finished extracting %s (%s)", result.ID.String(), result.Link)
+}
+
+func (s *Service) markResultAsDone(ctx context.Context, result *types.Result, isError bool) error {
+	// Mark result as done
+	err := s.repository.MarkResultAsDone(ctx, result.ID, isError)
 	if err != nil {
-		log.Fatalf("error getting is done: %v", err)
+		return fmt.Errorf("error marking result as done: %v", err)
 	}
 
-	// mark crawl as done & send message about finished crawl
+	// Check crawl results if everything's done
+	isDone, err := s.repository.IsAllCrawlResultsDone(ctx, result.CrawlID)
+	if err != nil {
+		return fmt.Errorf("error getting is done: %v", err)
+	}
+
 	if isDone {
 		if err = s.repository.MarkCrawlAsDone(ctx, result.CrawlID); err != nil {
 			log.Fatalf("error marking crawl as done: %v", err)
@@ -135,15 +148,11 @@ func (s *Service) ResultCreatedExtractPageInfo(ctx context.Context, snsEvent eve
 		crawlFinishedMsg := eventschema.CrawlFinishedMessage{
 			CrawlID: result.CrawlID.String(),
 		}
+
 		if err = s.snsClient.Publish(ctx, eventschema.CrawlFinished, crawlFinishedMsg); err != nil {
-			log.Fatalf("failed to publish CrawlFinished for %s", result.CrawlID.String())
+			return fmt.Errorf("failed to publish CrawlFinished for %s", result.CrawlID.String())
 		}
 	}
 
-	err = s.repository.Close()
-	if err != nil {
-		log.Fatalf("error closing connection: %v", err)
-	}
-
-	log.Infof("finished extracting %s (%s)", result.ID.String(), result.Link)
+	return nil
 }

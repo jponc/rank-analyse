@@ -1,13 +1,15 @@
 service: rank-analyse
 
+variablesResolutionMode: 20210326
+
 plugins:
   - serverless-prune-plugin
+  - serverless-domain-manager
 
 package:
-  exclude:
-  - ./**
-  include:
-  - ./bin/**
+  patterns:
+    - '!./**'
+    - './bin/**'
 
 provider:
   name: aws
@@ -22,23 +24,26 @@ provider:
   tracing:
     apiGateway: true
     lambda: true
-  iamRoleStatements:
-    # Allow all SNS and SES
-    - Effect: "Allow"
-      Resource: "*"
-      Action:
-        - sns:*
-        - ses:*
-    # S3
-    - Effect: Allow
-      Action:
-        - s3:PutObject
-        - s3:GetObject
-        - s3:ListBucket
-        - s3:ListBucketVersions
-      Resource:
-        - 'arn:aws:s3:::${self:custom.env.S3_RESULTS_BUCKET_NAME}'
-        - 'arn:aws:s3:::${self:custom.env.S3_RESULTS_BUCKET_NAME}/*'
+
+  iam:
+    role:
+      statements:
+        # Allow all SNS and SES
+        - Effect: "Allow"
+          Resource: "*"
+          Action:
+            - sns:*
+            - ses:*
+        # S3
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:ListBucket
+            - s3:ListBucketVersions
+          Resource:
+            - 'arn:aws:s3:::${self:custom.env.S3_RESULTS_BUCKET_NAME}'
+            - 'arn:aws:s3:::${self:custom.env.S3_RESULTS_BUCKET_NAME}/*'
 
 functions:
   # == Authorizers ==
@@ -89,9 +94,10 @@ functions:
       - http:
           path: /crawls/{id}
           method: get
-          parameters:
-            paths:
-              id: true
+          request:
+            parameters:
+              paths:
+                id: true
           authorizer:
             name: Authoriser
             resultTtlInSeconds: 0
@@ -104,9 +110,10 @@ functions:
       - http:
           path: /crawls/{id}
           method: get
-          parameters:
-            paths:
-              id: true
+          request:
+            parameters:
+              paths:
+                id: true
 
   # == SNS ==
   ProcessKeyword:
@@ -144,17 +151,23 @@ functions:
 
 custom:
   env:
-    JWT_SECRET: ${ssm:/${self:service}/${self:provider.stage}/JWT_SECRET~true}
-    DB_CONN_URL: ${ssm:/${self:service}/${self:provider.stage}/DB_CONN_URL~true}
+    JWT_SECRET: ${ssm:/${self:service}/${self:provider.stage}/JWT_SECRET}
+    DB_CONN_URL: ${ssm:/${self:service}/${self:provider.stage}/DB_CONN_URL}
     SNS_PREFIX: !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${self:service}-${self:provider.stage}'
-    ZENSERP_API_KEY: ${ssm:/${self:service}/${self:provider.stage}/ZENSERP_API_KEY~true}
+    ZENSERP_API_KEY: ${ssm:/${self:service}/${self:provider.stage}/ZENSERP_API_KEY}
     S3_RESULTS_BUCKET_NAME: ${ssm:/${self:service}/${self:provider.stage}/S3_RESULTS_BUCKET_NAME}
     API_BASE_URL: ${ssm:/${self:service}/${self:provider.stage}/API_BASE_URL}
 
   vpc:
     securityGroupIds: ${ssm:/uptactics/${self:provider.stage}/DEFAULT_SECURITY_GROUP}
-    subnetIds: ${ssm:/uptactics/${self:provider.stage}/PRIVATE_SUBNET_IDS~split}
+    subnetIds: ${ssm:/uptactics/${self:provider.stage}/PRIVATE_SUBNET_IDS}
 
   prune:
     automatic: true
     number: 10
+
+  customDomain:
+    domainName: ${ssm:/${self:service}/${self:provider.stage}/DOMAIN}
+    basePath: ''
+    stage: ${self:provider.stage}
+    createRoute53Record: true
