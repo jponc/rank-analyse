@@ -7,8 +7,8 @@ import (
 
 // Config
 type Config struct {
-	AWSRegion           string
-	S3ResultsBucketName string
+	AWSRegion        string
+	RDSConnectionURL string
 }
 
 // NewConfig initialises a new config
@@ -18,14 +18,14 @@ func NewConfig() (*Config, error) {
 		return nil, err
 	}
 
-	s3ResultsBucketName, err := getEnv("S3_RESULTS_BUCKET_NAME")
+	rdsConnectionURL, err := getEnv("DB_CONN_URL")
 	if err != nil {
 		return nil, err
 	}
 
 	return &Config{
-		AWSRegion:           awsRegion,
-		S3ResultsBucketName: s3ResultsBucketName,
+		AWSRegion:        awsRegion,
+		RDSConnectionURL: rdsConnectionURL,
 	}, nil
 }
 

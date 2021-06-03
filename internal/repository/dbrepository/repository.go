@@ -30,7 +30,7 @@ func (r *Repository) Connect() error {
 	return r.dbClient.Connect()
 }
 
-func (r *Repository) CreateCrawl(ctx context.Context, keyword, searchEngine, device, email string) (*types.Crawl, error) {
+func (r *Repository) CreateCrawl(ctx context.Context, keyword, searchEngine, device string) (*types.Crawl, error) {
 	if r.dbClient == nil {
 		return nil, fmt.Errorf("dbClient not initialised")
 	}
@@ -41,11 +41,11 @@ func (r *Repository) CreateCrawl(ctx context.Context, keyword, searchEngine, dev
 		ctx,
 		&id,
 		`
-			INSERT INTO crawl (keyword, search_engine, device, email)
-			VALUES ($1, $2, $3, $4)
+			INSERT INTO crawl (keyword, search_engine, device)
+			VALUES ($1, $2, $3)
 			RETURNING id
 		`,
-		keyword, searchEngine, device, email,
+		keyword, searchEngine, device,
 	)
 
 	if err != nil {

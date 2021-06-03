@@ -8,7 +8,6 @@ type HealthcheckResponse struct {
 
 type RunCrawlRequest struct {
 	Keyword string `json:"keyword"`
-	Email   string `json:"email"`
 }
 
 type RunCrawlResponse struct {
@@ -16,7 +15,7 @@ type RunCrawlResponse struct {
 }
 
 type GetCrawlResponse struct {
-	*types.Crawl
+	Data *types.Crawl `json:"data"`
 }
 
 type GetCrawlsResponse struct {

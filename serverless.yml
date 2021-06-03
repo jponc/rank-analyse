@@ -82,10 +82,11 @@ functions:
           path: /crawls
           method: get
 
-  GetCrawlJson:
-    handler: bin/GetCrawlJson
+  GetCrawl:
+    handler: bin/GetCrawl
+    vpc: ${self:custom.vpc}
     environment:
-      S3_RESULTS_BUCKET_NAME: ${self:custom.env.S3_RESULTS_BUCKET_NAME}
+      DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
     events:
       - http:
           path: /crawls/{id}
@@ -116,18 +117,6 @@ functions:
     environment:
       SNS_PREFIX: ${self:custom.env.SNS_PREFIX}
       DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
-
-  CrawlFinishedUploadFileAndNotifyUser:
-    handler: bin/CrawlFinishedUploadFileAndNotifyUser
-    events:
-      - sns: ${self:service}-${self:provider.stage}-CrawlFinished
-    timeout: 120 # 2 Minutes timeout to upload and send email to user
-    vpc: ${self:custom.vpc}
-    environment:
-      SNS_PREFIX: ${self:custom.env.SNS_PREFIX}
-      DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
-      S3_RESULTS_BUCKET_NAME: ${self:custom.env.S3_RESULTS_BUCKET_NAME}
-      API_BASE_URL: ${self:custom.env.API_BASE_URL}
 
 custom:
   env:

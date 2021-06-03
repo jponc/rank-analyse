@@ -46,8 +46,8 @@ func (s *Service) RunCrawl(ctx context.Context, request events.APIGatewayProxyRe
 	req := &apischema.RunCrawlRequest{}
 
 	err := json.Unmarshal([]byte(request.Body), req)
-	if err != nil || req.Keyword == "" || req.Email == "" {
-		log.Errorf("failed to Unmarshal")
+	if err != nil || req.Keyword == "" {
+		log.Errorf("failed to Unmarshal or error keyword")
 		return lambdaresponses.Respond400(fmt.Errorf("bad request"))
 	}
 
@@ -56,7 +56,6 @@ func (s *Service) RunCrawl(ctx context.Context, request events.APIGatewayProxyRe
 		Device:       "desktop",
 		SearchEngine: "google.com",
 		Count:        100,
-		Email:        req.Email,
 	}
 
 	err = s.snsClient.Publish(ctx, eventschema.ProcessKeyword, msg)
@@ -72,6 +71,7 @@ func (s *Service) RunCrawl(ctx context.Context, request events.APIGatewayProxyRe
 
 func (s *Service) GetCrawls(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	s.repository.Connect()
+	defer s.repository.Close()
 
 	if s.repository == nil {
 		log.Errorf("repository not defined")
@@ -89,23 +89,28 @@ func (s *Service) GetCrawls(ctx context.Context, request events.APIGatewayProxyR
 	return lambdaresponses.Respond200(res)
 }
 
-func (s *Service) GetCrawlJson(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	if s.s3repository == nil {
-		log.Errorf("s3repository not defined")
+func (s *Service) GetCrawl(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	s.repository.Connect()
+	defer s.repository.Close()
+
+	if s.repository == nil {
+		log.Errorf("repository not defined")
 		return lambdaresponses.Respond500()
 	}
 
-	crawlId, err := uuid.FromString(request.PathParameters["id"])
+	crawlID, err := uuid.FromString(request.PathParameters["id"])
 	if err != nil {
 		log.Errorf("crawlId missing from path parameters")
 		return lambdaresponses.Respond500()
 	}
 
-	url, err := s.s3repository.GetCrawlResultsURL(ctx, crawlId)
+	crawl, err := s.repository.GetCrawl(ctx, crawlID)
 	if err != nil {
-		log.Errorf("error when fetching crawl pre-signed url (%s): %v", crawlId, err)
+		log.Errorf("error getting crawl: %v", err)
 		return lambdaresponses.Respond500()
 	}
 
-	return lambdaresponses.Respond302(url)
+	res := apischema.GetCrawlResponse{Data: crawl}
+
+	return lambdaresponses.Respond200(res)
 }

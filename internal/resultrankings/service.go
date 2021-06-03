@@ -61,7 +61,6 @@ func (s *Service) ProcessKeyword(ctx context.Context, snsEvent events.SNSEvent) 
 		msg.Keyword,
 		msg.SearchEngine,
 		msg.Device,
-		msg.Email,
 	)
 
 	if err != nil {

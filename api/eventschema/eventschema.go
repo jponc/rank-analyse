@@ -11,7 +11,6 @@ type ProcessKeywordMessage struct {
 	SearchEngine string `json:"search_engine"`
 	Device       string `json:"device"`
 	Count        int    `json:"count"`
-	Email        string `json:"email"`
 }
 
 type ResultCreatedMessage struct {
