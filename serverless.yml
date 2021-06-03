@@ -110,6 +110,48 @@ functions:
               paths:
                 id: true
 
+  GetResult:
+    handler: bin/GetResult
+    vpc: ${self:custom.vpc}
+    environment:
+      DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
+    events:
+      - http:
+          path: /results/{id}
+          method: get
+          request:
+            parameters:
+              paths:
+                id: true
+
+  GetResultInfo:
+    handler: bin/GetResultInfo
+    vpc: ${self:custom.vpc}
+    environment:
+      DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
+    events:
+      - http:
+          path: /results/{id}/info
+          method: get
+          request:
+            parameters:
+              paths:
+                id: true
+
+  GetResultLinks:
+    handler: bin/GetResultLinks
+    vpc: ${self:custom.vpc}
+    environment:
+      DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
+    events:
+      - http:
+          path: /results/{id}/links
+          method: get
+          request:
+            parameters:
+              paths:
+                id: true
+
   # == SNS ==
   ProcessKeyword:
     handler: bin/ProcessKeyword

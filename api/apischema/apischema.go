@@ -18,6 +18,18 @@ type GetCrawlResponse struct {
 	Data *types.Crawl `json:"data"`
 }
 
+type GetResultResponse struct {
+	Data *types.Result `json:"data"`
+}
+
+type GetResultInfoResponse struct {
+	Data *types.ExtractInfo `json:"data"`
+}
+
+type GetResultLinksResponse struct {
+	Data *[]types.ExtractLink `json:"data"`
+}
+
 type GetCrawlsResponse struct {
 	Data *[]types.Crawl `json:"data"`
 }

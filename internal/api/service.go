@@ -140,3 +140,81 @@ func (s *Service) GetResults(ctx context.Context, request events.APIGatewayProxy
 
 	return lambdaresponses.Respond200(res)
 }
+
+func (s *Service) GetResult(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	s.repository.Connect()
+	defer s.repository.Close()
+
+	if s.repository == nil {
+		log.Errorf("repository not defined")
+		return lambdaresponses.Respond500()
+	}
+
+	resultID, err := uuid.FromString(request.PathParameters["id"])
+	if err != nil {
+		log.Errorf("resultID missing from path parameters")
+		return lambdaresponses.Respond500()
+	}
+
+	result, err := s.repository.GetResult(ctx, resultID)
+	if err != nil {
+		log.Errorf("error getting result: %v", err)
+		return lambdaresponses.Respond500()
+	}
+
+	res := apischema.GetResultResponse{Data: result}
+
+	return lambdaresponses.Respond200(res)
+}
+
+func (s *Service) GetResultInfo(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	s.repository.Connect()
+	defer s.repository.Close()
+
+	if s.repository == nil {
+		log.Errorf("repository not defined")
+		return lambdaresponses.Respond500()
+	}
+
+	resultID, err := uuid.FromString(request.PathParameters["id"])
+	if err != nil {
+		log.Errorf("resultID missing from path parameters")
+		return lambdaresponses.Respond500()
+	}
+
+	info, err := s.repository.GetExtractInfo(ctx, resultID)
+	if err != nil {
+		log.Errorf("error getting result info: %v", err)
+		return lambdaresponses.Respond500()
+	}
+
+	res := apischema.GetResultInfoResponse{Data: info}
+
+	return lambdaresponses.Respond200(res)
+}
+
+func (s *Service) GetResultLinks(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	s.repository.Connect()
+	defer s.repository.Close()
+
+	if s.repository == nil {
+		log.Errorf("repository not defined")
+		return lambdaresponses.Respond500()
+	}
+
+	resultID, err := uuid.FromString(request.PathParameters["id"])
+	if err != nil {
+		log.Errorf("resultID missing from path parameters")
+		return lambdaresponses.Respond500()
+	}
+
+	links, err := s.repository.GetExtractLinks(ctx, resultID)
+	if err != nil {
+		log.Errorf("error getting result links: %v", err)
+		return lambdaresponses.Respond500()
+	}
+
+	res := apischema.GetResultLinksResponse{Data: links}
+
+	return lambdaresponses.Respond200(res)
+}
