@@ -82,6 +82,20 @@ functions:
           path: /crawls
           method: get
 
+  GetResults:
+    handler: bin/GetResults
+    vpc: ${self:custom.vpc}
+    environment:
+      DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
+    events:
+      - http:
+          path: /results
+          method: get
+          request:
+            parameters:
+              querystrings:
+                crawl_id: true
+
   GetCrawl:
     handler: bin/GetCrawl
     vpc: ${self:custom.vpc}

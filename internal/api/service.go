@@ -114,3 +114,29 @@ func (s *Service) GetCrawl(ctx context.Context, request events.APIGatewayProxyRe
 
 	return lambdaresponses.Respond200(res)
 }
+
+func (s *Service) GetResults(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	s.repository.Connect()
+	defer s.repository.Close()
+
+	if s.repository == nil {
+		log.Errorf("repository not defined")
+		return lambdaresponses.Respond500()
+	}
+
+	crawlID, err := uuid.FromString(request.QueryStringParameters["crawl_id"])
+	if err != nil {
+		log.Errorf("crawlId missing from path parameters")
+		return lambdaresponses.Respond400(fmt.Errorf("bad request"))
+	}
+
+	results, err := s.repository.GetCrawlResults(ctx, crawlID)
+	if err != nil {
+		log.Errorf("error getting crawls: %v", err)
+		return lambdaresponses.Respond500()
+	}
+
+	res := apischema.GetResultsResponse{Data: results}
+
+	return lambdaresponses.Respond200(res)
+}

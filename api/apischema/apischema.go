@@ -21,3 +21,7 @@ type GetCrawlResponse struct {
 type GetCrawlsResponse struct {
 	Data *[]types.Crawl `json:"data"`
 }
+
+type GetResultsResponse struct {
+	Data *[]types.Result `json:"data"`
+}
