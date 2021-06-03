@@ -98,6 +98,26 @@ func (r *Repository) GetResult(ctx context.Context, id uuid.UUID) (*types.Result
 	return &result, nil
 }
 
+func (r *Repository) GetCrawls(ctx context.Context) (*[]types.Crawl, error) {
+	if r.dbClient == nil {
+		return nil, fmt.Errorf("dbClient not initialised")
+	}
+
+	crawls := []types.Crawl{}
+
+	err := r.dbClient.SelectContext(
+		ctx,
+		&crawls,
+		`SELECT * FROM crawl ORDER BY created_at DESC`,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get crawl: %w", err)
+	}
+
+	return &crawls, nil
+}
+
 func (r *Repository) GetCrawl(ctx context.Context, id uuid.UUID) (*types.Crawl, error) {
 	if r.dbClient == nil {
 		return nil, fmt.Errorf("dbClient not initialised")

@@ -72,22 +72,15 @@ functions:
     environment:
       SNS_PREFIX: ${self:custom.env.SNS_PREFIX}
 
-  GetCrawl:
-    handler: bin/GetCrawl
+  GetCrawls:
+    handler: bin/GetCrawls
     vpc: ${self:custom.vpc}
     environment:
       DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
     events:
       - http:
-          path: /crawls/{id}
+          path: /crawls
           method: get
-          request:
-            parameters:
-              paths:
-                id: true
-          authorizer:
-            name: Authoriser
-            resultTtlInSeconds: 0
 
   GetCrawlJson:
     handler: bin/GetCrawlJson

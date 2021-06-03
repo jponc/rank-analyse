@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/gofrs/uuid"
@@ -39,22 +37,6 @@ func (s *Service) Healthcheck(ctx context.Context, request events.APIGatewayProx
 	return lambdaresponses.Respond200(apischema.HealthcheckResponse{Status: "OK"})
 }
 
-func (s *Service) LambdaTest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	resp, err := http.Get("https://jsonplaceholder.typicode.com/posts")
-	if err != nil {
-		return lambdaresponses.Respond500()
-	}
-	//We Read the response body on the line below.
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return lambdaresponses.Respond500()
-	}
-	//Convert the body to type string
-	sb := string(body)
-
-	return lambdaresponses.Respond200(apischema.LambdaTestResponse{Out: sb})
-}
-
 func (s *Service) RunCrawl(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	if s.snsClient == nil {
 		log.Errorf("snsClient not defined")
@@ -86,6 +68,25 @@ func (s *Service) RunCrawl(ctx context.Context, request events.APIGatewayProxyRe
 	log.Infof("successfully queued keyword %s for processing", msg.Keyword)
 
 	return lambdaresponses.Respond200(apischema.RunCrawlResponse{Status: "OK"})
+}
+
+func (s *Service) GetCrawls(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	s.repository.Connect()
+
+	if s.repository == nil {
+		log.Errorf("repository not defined")
+		return lambdaresponses.Respond500()
+	}
+
+	crawls, err := s.repository.GetCrawls(ctx)
+	if err != nil {
+		log.Errorf("error getting crawls: %v", err)
+		return lambdaresponses.Respond500()
+	}
+
+	res := apischema.GetCrawlsResponse{Data: crawls}
+
+	return lambdaresponses.Respond200(res)
 }
 
 func (s *Service) GetCrawlJson(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {

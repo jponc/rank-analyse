@@ -6,10 +6,6 @@ type HealthcheckResponse struct {
 	Status string `json:"status"`
 }
 
-type LambdaTestResponse struct {
-	Out string `json:"out"`
-}
-
 type RunCrawlRequest struct {
 	Keyword string `json:"keyword"`
 	Email   string `json:"email"`
@@ -21,4 +17,8 @@ type RunCrawlResponse struct {
 
 type GetCrawlResponse struct {
 	*types.Crawl
+}
+
+type GetCrawlsResponse struct {
+	Data *[]types.Crawl `json:"data"`
 }

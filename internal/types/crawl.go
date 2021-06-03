@@ -6,6 +6,8 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+type CrawlArr []Crawl
+
 type Crawl struct {
 	ID           uuid.UUID `db:"id" json:"id"`
 	Email        string    `db:"email" json:"email"`
