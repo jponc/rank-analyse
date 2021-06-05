@@ -59,6 +59,7 @@ functions:
       - http:
           path: /healthcheck
           method: get
+          cors: true
 
   RunCrawl:
     handler: bin/RunCrawl
@@ -66,6 +67,7 @@ functions:
       - http:
           path: /run-crawl
           method: post
+          cors: true
           authorizer:
             name: Authoriser
             resultTtlInSeconds: 0
@@ -81,6 +83,7 @@ functions:
       - http:
           path: /crawls
           method: get
+          cors: true
 
   GetResults:
     handler: bin/GetResults
@@ -91,6 +94,7 @@ functions:
       - http:
           path: /results
           method: get
+          cors: true
           request:
             parameters:
               querystrings:
@@ -105,6 +109,7 @@ functions:
       - http:
           path: /crawls/{id}
           method: get
+          cors: true
           request:
             parameters:
               paths:
@@ -119,6 +124,7 @@ functions:
       - http:
           path: /results/{id}
           method: get
+          cors: true
           request:
             parameters:
               paths:
@@ -133,6 +139,7 @@ functions:
       - http:
           path: /results/{id}/info
           method: get
+          cors: true
           request:
             parameters:
               paths:
@@ -147,6 +154,7 @@ functions:
       - http:
           path: /results/{id}/links
           method: get
+          cors: true
           request:
             parameters:
               paths:
