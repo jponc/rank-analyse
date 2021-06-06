@@ -15,3 +15,8 @@ vpc_default_security_group_ssm_path = "/uptactics/production/DEFAULT_SECURITY_GR
 
 # Domain
 domain_ssm_value = "api-rankanalyze.appextend.com"
+
+# Frontend
+frontend_url                       = "rankanalyze.appextend.com"
+appextend_hosted_zone_id_ssm_path  = "/uptactics/APPEXTEND_HOSTED_ZONE_ID"
+appextend_certificate_arn_ssm_path = "/uptactics/APPEXTEND_CERTIFICATE_ARN"
