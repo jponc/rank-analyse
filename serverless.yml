@@ -182,12 +182,23 @@ functions:
       SNS_PREFIX: ${self:custom.env.SNS_PREFIX}
       DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
 
+  ResultCreatedRunAnalysis:
+    handler: bin/ResultCreatedRunAnalysis
+    events:
+      - sns: ${self:service}-${self:provider.stage}-ResultCreated
+    timeout: 120 # 2 Minutes timeout to run analysis and save data to db
+    vpc: ${self:custom.vpc}
+    environment:
+      DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
+      TEXTRAZOR_API_KEY: ${self:custom.env.TEXTRAZOR_API_KEY}
+
 custom:
   env:
     JWT_SECRET: ${ssm:/${self:service}/${self:provider.stage}/JWT_SECRET}
     DB_CONN_URL: ${ssm:/${self:service}/${self:provider.stage}/DB_CONN_URL}
     SNS_PREFIX: !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${self:service}-${self:provider.stage}'
     ZENSERP_API_KEY: ${ssm:/${self:service}/${self:provider.stage}/ZENSERP_API_KEY}
+    TEXTRAZOR_API_KEY: ${ssm:/${self:service}/${self:provider.stage}/TEXTRAZOR_API_KEY}
     S3_RESULTS_BUCKET_NAME: ${ssm:/${self:service}/${self:provider.stage}/S3_RESULTS_BUCKET_NAME}
 
   vpc:

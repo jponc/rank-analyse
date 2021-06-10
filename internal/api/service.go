@@ -55,7 +55,7 @@ func (s *Service) RunCrawl(ctx context.Context, request events.APIGatewayProxyRe
 		Keyword:      req.Keyword,
 		Device:       "desktop",
 		SearchEngine: "google.com",
-		Count:        100,
+		Count:        10, // TODO REMOVE
 	}
 
 	err = s.snsClient.Publish(ctx, eventschema.ProcessKeyword, msg)

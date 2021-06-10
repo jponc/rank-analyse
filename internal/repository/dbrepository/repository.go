@@ -191,6 +191,70 @@ func (r *Repository) CreateExtractLinks(ctx context.Context, resultID uuid.UUID,
 	return nil
 }
 
+func (r *Repository) CreateAnalyzeTopics(ctx context.Context, resultID uuid.UUID, topics types.AnalyzeTopicArray) error {
+	if r.dbClient == nil {
+		return fmt.Errorf("dbClient not initialised")
+	}
+
+	if len(topics) == 0 {
+		return nil
+	}
+
+	queryInsert := `INSERT INTO analyze_topics (result_id, label, score) VALUES `
+	insertParams := []interface{}{}
+
+	for i, topic := range topics {
+		p := i * 3 // starting position for insert params
+		queryInsert += fmt.Sprintf("($%d,$%d,$%d),", p+1, p+2, p+3)
+		insertParams = append(insertParams, resultID, topic.Label, topic.Score)
+	}
+
+	queryInsert = queryInsert[:len(queryInsert)-1] // remove trailing ","
+
+	_, err := r.dbClient.Exec(
+		ctx,
+		queryInsert,
+		insertParams...,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to insert analyze topics: %v", err)
+	}
+
+	return nil
+}
+
+func (r *Repository) CreateAnalyzeEntities(ctx context.Context, resultID uuid.UUID, entities types.AnalyzeEntityArray) error {
+	if r.dbClient == nil {
+		return fmt.Errorf("dbClient not initialised")
+	}
+
+	if len(entities) == 0 {
+		return nil
+	}
+
+	queryInsert := `INSERT INTO analyze_entities (result_id, confidence_score, relevance_score, entity, matched_text) VALUES `
+	insertParams := []interface{}{}
+
+	for i, entity := range entities {
+		p := i * 5 // starting position for insert params
+		queryInsert += fmt.Sprintf("($%d,$%d,$%d,$%d,$%d),", p+1, p+2, p+3, p+4, p+5)
+		insertParams = append(insertParams, resultID, entity.ConfidenceScore, entity.RelevanceScore, entity.Entity, entity.MatchedText)
+	}
+
+	queryInsert = queryInsert[:len(queryInsert)-1] // remove trailing ","
+
+	_, err := r.dbClient.Exec(
+		ctx,
+		queryInsert,
+		insertParams...,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to insert analyze topics: %v", err)
+	}
+
+	return nil
+}
+
 func (r *Repository) MarkResultAsDone(ctx context.Context, resultID uuid.UUID, isError bool) error {
 	if r.dbClient == nil {
 		return fmt.Errorf("dbClient not initialised")
