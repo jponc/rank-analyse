@@ -393,6 +393,64 @@ func (r *Repository) GetExtractLinks(ctx context.Context, resultID uuid.UUID) (*
 	return &extractLinks, nil
 }
 
+func (r *Repository) GetTopics(ctx context.Context, resultID uuid.UUID) (*[]types.AnalyzeTopic, error) {
+	if r.dbClient == nil {
+		return nil, fmt.Errorf("dbClient not initialised")
+	}
+
+	var topics []types.AnalyzeTopic
+
+	err := r.dbClient.SelectContext(
+		ctx,
+		&topics,
+		`
+			SELECT *
+			FROM analyze_topics
+			WHERE result_id = $1
+		`,
+		resultID,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to select topics: %v", err)
+	}
+
+	if topics == nil {
+		return &[]types.AnalyzeTopic{}, nil
+	}
+
+	return &topics, nil
+}
+
+func (r *Repository) GetEntities(ctx context.Context, resultID uuid.UUID) (*[]types.AnalyzeEntity, error) {
+	if r.dbClient == nil {
+		return nil, fmt.Errorf("dbClient not initialised")
+	}
+
+	var entities []types.AnalyzeEntity
+
+	err := r.dbClient.SelectContext(
+		ctx,
+		&entities,
+		`
+			SELECT *
+			FROM analyze_entities
+			WHERE result_id = $1
+		`,
+		resultID,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to select entities: %v", err)
+	}
+
+	if entities == nil {
+		return &[]types.AnalyzeEntity{}, nil
+	}
+
+	return &entities, nil
+}
+
 func (r *Repository) Close() error {
 	if r.dbClient == nil {
 		return fmt.Errorf("dbClient not initialised")

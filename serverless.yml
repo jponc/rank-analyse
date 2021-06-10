@@ -160,6 +160,37 @@ functions:
               paths:
                 id: true
 
+
+  GetResultTopics:
+    handler: bin/GetResultTopics
+    vpc: ${self:custom.vpc}
+    environment:
+      DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
+    events:
+      - http:
+          path: /results/{id}/topics
+          method: get
+          cors: true
+          request:
+            parameters:
+              paths:
+                id: true
+
+  GetResultEntities:
+    handler: bin/GetResultEntities
+    vpc: ${self:custom.vpc}
+    environment:
+      DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
+    events:
+      - http:
+          path: /results/{id}/entities
+          method: get
+          cors: true
+          request:
+            parameters:
+              paths:
+                id: true
+
   # == SNS ==
   ProcessKeyword:
     handler: bin/ProcessKeyword

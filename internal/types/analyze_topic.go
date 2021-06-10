@@ -3,14 +3,17 @@ package types
 import (
 	"fmt"
 
+	"github.com/gofrs/uuid"
 	"github.com/jponc/rank-analyse/pkg/textrazor"
 )
 
 type AnalyzeTopicArray []AnalyzeTopic
 
 type AnalyzeTopic struct {
-	Label string  `json:"label" db:"label"`
-	Score float32 `json:"score" db:"score"`
+	ID       uuid.UUID `json:"id" db:"id"`
+	ResultID uuid.UUID `json:"result_id" db:"result_id"`
+	Label    string    `json:"label" db:"label"`
+	Score    float32   `json:"score" db:"score"`
 }
 
 func (t *AnalyzeTopicArray) Unmarshal(src interface{}) error {

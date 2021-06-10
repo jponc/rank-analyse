@@ -30,6 +30,14 @@ type GetResultLinksResponse struct {
 	Data *[]types.ExtractLink `json:"data"`
 }
 
+type GetResultTopicsResponse struct {
+	Data *[]types.AnalyzeTopic `json:"data"`
+}
+
+type GetResultEntiitesResponse struct {
+	Data *[]types.AnalyzeEntity `json:"data"`
+}
+
 type GetCrawlsResponse struct {
 	Data *[]types.Crawl `json:"data"`
 }

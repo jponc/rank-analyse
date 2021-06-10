@@ -70,7 +70,9 @@ func (s *Service) RunCrawl(ctx context.Context, request events.APIGatewayProxyRe
 }
 
 func (s *Service) GetCrawls(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	s.repository.Connect()
+	if err := s.repository.Connect(); err != nil {
+		log.Fatalf("can't connect to DB")
+	}
 	defer s.repository.Close()
 
 	if s.repository == nil {
@@ -90,7 +92,9 @@ func (s *Service) GetCrawls(ctx context.Context, request events.APIGatewayProxyR
 }
 
 func (s *Service) GetCrawl(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	s.repository.Connect()
+	if err := s.repository.Connect(); err != nil {
+		log.Fatalf("can't connect to DB")
+	}
 	defer s.repository.Close()
 
 	if s.repository == nil {
@@ -116,7 +120,9 @@ func (s *Service) GetCrawl(ctx context.Context, request events.APIGatewayProxyRe
 }
 
 func (s *Service) GetResults(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	s.repository.Connect()
+	if err := s.repository.Connect(); err != nil {
+		log.Fatalf("can't connect to DB")
+	}
 	defer s.repository.Close()
 
 	if s.repository == nil {
@@ -142,7 +148,9 @@ func (s *Service) GetResults(ctx context.Context, request events.APIGatewayProxy
 }
 
 func (s *Service) GetResult(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	s.repository.Connect()
+	if err := s.repository.Connect(); err != nil {
+		log.Fatalf("can't connect to DB")
+	}
 	defer s.repository.Close()
 
 	if s.repository == nil {
@@ -168,7 +176,9 @@ func (s *Service) GetResult(ctx context.Context, request events.APIGatewayProxyR
 }
 
 func (s *Service) GetResultInfo(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	s.repository.Connect()
+	if err := s.repository.Connect(); err != nil {
+		log.Fatalf("can't connect to DB")
+	}
 	defer s.repository.Close()
 
 	if s.repository == nil {
@@ -194,7 +204,9 @@ func (s *Service) GetResultInfo(ctx context.Context, request events.APIGatewayPr
 }
 
 func (s *Service) GetResultLinks(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	s.repository.Connect()
+	if err := s.repository.Connect(); err != nil {
+		log.Fatalf("can't connect to DB")
+	}
 	defer s.repository.Close()
 
 	if s.repository == nil {
@@ -215,6 +227,62 @@ func (s *Service) GetResultLinks(ctx context.Context, request events.APIGatewayP
 	}
 
 	res := apischema.GetResultLinksResponse{Data: links}
+
+	return lambdaresponses.Respond200(res)
+}
+
+func (s *Service) GetResultTopics(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	if err := s.repository.Connect(); err != nil {
+		log.Fatalf("can't connect to DB")
+	}
+	defer s.repository.Close()
+
+	if s.repository == nil {
+		log.Errorf("repository not defined")
+		return lambdaresponses.Respond500()
+	}
+
+	resultID, err := uuid.FromString(request.PathParameters["id"])
+	if err != nil {
+		log.Errorf("resultID missing from path parameters")
+		return lambdaresponses.Respond500()
+	}
+
+	topics, err := s.repository.GetTopics(ctx, resultID)
+	if err != nil {
+		log.Errorf("error getting topics: %v", err)
+		return lambdaresponses.Respond500()
+	}
+
+	res := apischema.GetResultTopicsResponse{Data: topics}
+
+	return lambdaresponses.Respond200(res)
+}
+
+func (s *Service) GetResultEntities(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	if err := s.repository.Connect(); err != nil {
+		log.Fatalf("can't connect to DB")
+	}
+	defer s.repository.Close()
+
+	if s.repository == nil {
+		log.Errorf("repository not defined")
+		return lambdaresponses.Respond500()
+	}
+
+	resultID, err := uuid.FromString(request.PathParameters["id"])
+	if err != nil {
+		log.Errorf("resultID missing from path parameters")
+		return lambdaresponses.Respond500()
+	}
+
+	entities, err := s.repository.GetEntities(ctx, resultID)
+	if err != nil {
+		log.Errorf("error getting entities: %v", err)
+		return lambdaresponses.Respond500()
+	}
+
+	res := apischema.GetResultEntiitesResponse{Data: entities}
 
 	return lambdaresponses.Respond200(res)
 }

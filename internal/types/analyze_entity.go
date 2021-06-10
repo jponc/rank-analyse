@@ -3,16 +3,19 @@ package types
 import (
 	"fmt"
 
+	"github.com/gofrs/uuid"
 	"github.com/jponc/rank-analyse/pkg/textrazor"
 )
 
 type AnalyzeEntityArray []AnalyzeEntity
 
 type AnalyzeEntity struct {
-	Entity          string  `json:"entity" db:"entity"`
-	ConfidenceScore float32 `json:"confidence_score" db:"confidence_score"`
-	RelevanceScore  float32 `json:"relevance_score" db:"relevance_score"`
-	MatchedText     string  `json:"matched_text" db:"matched_text"`
+	ID              uuid.UUID `json:"id" db:"id"`
+	ResultID        uuid.UUID `json:"result_id" db:"result_id"`
+	Entity          string    `json:"entity" db:"entity"`
+	ConfidenceScore float32   `json:"confidence_score" db:"confidence_score"`
+	RelevanceScore  float32   `json:"relevance_score" db:"relevance_score"`
+	MatchedText     string    `json:"matched_text" db:"matched_text"`
 }
 
 func (t *AnalyzeEntityArray) Unmarshal(src interface{}) error {
