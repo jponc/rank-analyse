@@ -19,5 +19,5 @@ type Response struct {
 	Language           string      `json:"language"`
 	LanguageIsReliable bool        `json:"languageIsReliable"`
 	Entities           EntityArray `json:"entities"`
-	Topics             TopicArray  `json:"coarseTopics"`
+	Topics             TopicArray  `json:"topics"`
 }
