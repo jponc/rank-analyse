@@ -219,6 +219,7 @@ functions:
       - sns: ${self:service}-${self:provider.stage}-ResultCreated
     timeout: 120 # 2 Minutes timeout to run analysis and save data to db
     vpc: ${self:custom.vpc}
+    reservedConcurrency: 2
     environment:
       DB_CONN_URL: ${self:custom.env.DB_CONN_URL}
       TEXTRAZOR_API_KEY: ${self:custom.env.TEXTRAZOR_API_KEY}
