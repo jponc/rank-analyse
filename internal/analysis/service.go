@@ -95,5 +95,10 @@ func (s *Service) ResultCreatedRunAnalysis(ctx context.Context, snsEvent events.
 		log.Fatalf("failed to save entities: %v", err)
 	}
 
+	err = s.repository.SaveCleanedText(ctx, resultID, analyzeResponse.CleanedText)
+	if err != nil {
+		log.Fatalf("failed to save cleaned text: %v", err)
+	}
+
 	log.Infof("successfully save analaysis data")
 }

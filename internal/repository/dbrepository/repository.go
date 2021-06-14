@@ -451,6 +451,25 @@ func (r *Repository) GetEntities(ctx context.Context, resultID uuid.UUID) (*[]ty
 	return &entities, nil
 }
 
+func (r *Repository) SaveCleanedText(ctx context.Context, resultID uuid.UUID, cleanedText string) error {
+	if r.dbClient == nil {
+		return fmt.Errorf("dbClient not initialised")
+	}
+
+	_, err := r.dbClient.Exec(
+		ctx,
+		`UPDATE extract_info SET cleaned_text = $1 WHERE result_id = $2`,
+		cleanedText,
+		resultID,
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed to update extract info cleaned text: %v", err)
+	}
+
+	return nil
+}
+
 func (r *Repository) Close() error {
 	if r.dbClient == nil {
 		return fmt.Errorf("dbClient not initialised")
