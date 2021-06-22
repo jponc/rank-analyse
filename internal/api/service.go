@@ -23,7 +23,11 @@ type Service struct {
 	s3repository *s3repository.Repository
 }
 
-func NewService(repository *dbrepository.Repository, snsClient *sns.Client, s3repository *s3repository.Repository) *Service {
+func NewService(
+	repository *dbrepository.Repository,
+	snsClient *sns.Client,
+	s3repository *s3repository.Repository,
+) *Service {
 	s := &Service{
 		repository:   repository,
 		snsClient:    snsClient,

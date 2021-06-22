@@ -160,7 +160,6 @@ functions:
               paths:
                 id: true
 
-
   GetResultTopics:
     handler: bin/GetResultTopics
     vpc: ${self:custom.vpc}
@@ -190,6 +189,14 @@ functions:
             parameters:
               paths:
                 id: true
+
+  SimilarityAnalysis:
+    handler: bin/SimilarityAnalysis
+    events:
+      - http:
+          path: /similarity-analysis
+          method: post
+          cors: true
 
   # == SNS ==
   ProcessKeyword:

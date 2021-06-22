@@ -45,3 +45,8 @@ type GetCrawlsResponse struct {
 type GetResultsResponse struct {
 	Data *[]types.Result `json:"data"`
 }
+
+type SimilarityAnalysisRequest struct {
+	Keyword1 string `json:"keyword1"`
+	Keyword2 string `json:"keyword2"`
+}
