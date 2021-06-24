@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/jponc/rank-analyse/internal/api"
+	"github.com/jponc/rank-analyse/internal/similarity"
 	pkgHttp "github.com/jponc/rank-analyse/pkg/http"
 	"github.com/jponc/rank-analyse/pkg/zenserp"
 	log "github.com/sirupsen/logrus"
@@ -22,7 +22,7 @@ func main() {
 		log.Fatalf("cannot initialise zenserp client %v", err)
 	}
 
-	service := api.NewService(nil, nil, nil, zenserpClient)
+	service := similarity.NewService(zenserpClient, config.Locations, config.Country)
 
 	lambda.Start(service.SimilarityAnalysis)
 }

@@ -1,12 +1,12 @@
 package types
 
-type SimilaryKeyword struct {
-	Keyword string
-	Results []SimilarityResult
+type SimilarityKeyword struct {
+	Keyword string             `json:"keyword"`
+	Results []SimilarityResult `json:"similarity_results"`
 }
 
 type SimilarityResult struct {
-	Position  float32
-	SeenCount int
-	Title     string
+	Positions []int  `json:"positions"`
+	SeenCount int    `json:"seen_count"`
+	Title     string `json:"title"`
 }

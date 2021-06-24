@@ -50,3 +50,10 @@ type SimilarityAnalysisRequest struct {
 	Keyword1 string `json:"keyword1"`
 	Keyword2 string `json:"keyword2"`
 }
+
+type SimilarityAnalysisResponse struct {
+	Keyword1Similarity *types.SimilarityKeyword `json:"keyword1_similarity"`
+	Keyword2Similarity *types.SimilarityKeyword `json:"keyword2_similarity"`
+	Locations          []string                 `json:"locations"`
+	Country            string                   `json:"country"`
+}

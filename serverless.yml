@@ -192,11 +192,15 @@ functions:
 
   SimilarityAnalysis:
     handler: bin/SimilarityAnalysis
+    memorySize: 512
     events:
       - http:
           path: /similarity-analysis
           method: post
           cors: true
+    timeout: 30
+    environment:
+      ZENSERP_API_KEY: ${self:custom.env.ZENSERP_API_KEY}
 
   # == SNS ==
   ProcessKeyword:
@@ -246,7 +250,7 @@ custom:
 
   prune:
     automatic: true
-    number: 10
+    number: 2
 
   customDomain:
     domainName: ${ssm:/${self:service}/${self:provider.stage}/DOMAIN}
