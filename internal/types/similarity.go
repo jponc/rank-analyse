@@ -6,7 +6,7 @@ type SimilarityKeyword struct {
 }
 
 type SimilarityResult struct {
-	Positions []int  `json:"positions"`
-	SeenCount int    `json:"seen_count"`
-	Title     string `json:"title"`
+	AvePosition float32 `json:"average_position"`
+	SeenCount   int     `json:"seen_count"`
+	Title       string  `json:"title"`
 }

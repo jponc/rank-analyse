@@ -72,7 +72,7 @@ func (s *Service) SimilarityAnalysis(ctx context.Context, request events.APIGate
 					"desktop",
 					s.country,
 					l,
-					20,
+					100,
 				)
 
 				if err != nil {
@@ -109,6 +109,9 @@ func (s *Service) buildSimilarityKeyword(keyword string, locationResult map[stri
 	// title to similarity result map
 	resultsMap := map[string]*types.SimilarityResult{}
 
+	// title to positions array
+	positionsMap := map[string][]int{}
+
 	for _, result := range locationResult {
 		for _, item := range result.ResulItems {
 			if item.Title == "" {
@@ -116,25 +119,33 @@ func (s *Service) buildSimilarityKeyword(keyword string, locationResult map[stri
 			}
 
 			if res, found := resultsMap[item.Title]; found {
-				res.Positions = append(res.Positions, item.Position)
+				positionsMap[item.Title] = append(positionsMap[item.Title], item.Position)
 				res.SeenCount++
 			} else {
 				resultsMap[item.Title] = &types.SimilarityResult{
-					Positions: []int{item.Position},
 					SeenCount: 1,
 					Title:     item.Title,
 				}
+
+				positionsMap[item.Title] = []int{item.Position}
 			}
 		}
 	}
 
 	results := []types.SimilarityResult{}
 	for _, r := range resultsMap {
+		sum := 0
+
+		for _, p := range positionsMap[r.Title] {
+			sum = sum + p
+		}
+
+		r.AvePosition = float32(sum) / float32(len(positionsMap[r.Title]))
 		results = append(results, *r)
 	}
 
 	sort.SliceStable(results, func(i, j int) bool {
-		return results[i].SeenCount > results[j].SeenCount
+		return results[i].AvePosition < results[j].AvePosition
 	})
 
 	similarityKeyword := types.SimilarityKeyword{
