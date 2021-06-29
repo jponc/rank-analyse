@@ -125,6 +125,7 @@ func (s *Service) buildSimilarityKeyword(keyword string, locationResult map[stri
 				resultsMap[item.Title] = &types.SimilarityResult{
 					SeenCount: 1,
 					Title:     item.Title,
+					Link:      item.URL,
 				}
 
 				positionsMap[item.Title] = []int{item.Position}
