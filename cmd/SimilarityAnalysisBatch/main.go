@@ -22,7 +22,7 @@ func main() {
 		log.Fatalf("cannot initialise zenserp client %v", err)
 	}
 
-	service := similarity.NewService(zenserpClient, config.Locations, config.Country, "")
+	service := similarity.NewService(zenserpClient, config.Locations, config.Country, config.ZenserpBatchWebhookURL)
 
-	lambda.Start(service.SimilarityAnalysis)
+	lambda.Start(service.SimilarityAnalysisBatch)
 }

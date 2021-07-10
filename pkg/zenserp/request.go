@@ -18,6 +18,7 @@ const (
 	zenserpBaseURL     = "https://app.zenserp.com"
 	searchPath         = "api/v2/search?q=%s&num=%d&search_engine=%s&device=%s"
 	searchLocationPath = "api/v2/search?q=%s&num=%d&search_engine=%s&device=%s&gl=%s&location=%s"
+	batchPath          = "api/v1/batches"
 )
 
 func (c *Client) do(ctx context.Context, method string, endpoint string, body []byte, contentType string) ([]byte, error) {
@@ -78,6 +79,28 @@ func (c *Client) getJSON(ctx context.Context, endpoint string, result interface{
 	err = json.Unmarshal(bytes, result)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal Zenserp response (%w)", err)
+	}
+
+	log.WithField("endpoint", endpoint).WithField("response", result).Debug("api call succeeded")
+	return nil
+}
+
+func (c *Client) postJSON(ctx context.Context, endpoint string, body interface{}, result interface{}) error {
+	bytes, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+
+	bytes, err = c.do(ctx, "POST", endpoint, bytes, "application/json")
+	if err != nil {
+		return fmt.Errorf("error while calling Zenserp POST JSON API (%w)", err)
+	}
+
+	if result != nil {
+		err = json.Unmarshal(bytes, result)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal Zenserp response (%w)", err)
+		}
 	}
 
 	log.WithField("endpoint", endpoint).WithField("response", result).Debug("api call succeeded")

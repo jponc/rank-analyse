@@ -57,3 +57,13 @@ type SimilarityAnalysisResponse struct {
 	Locations          []string                 `json:"locations"`
 	Country            string                   `json:"country"`
 }
+
+type SimilarityAnalysisBatchRequest struct {
+	Keyword1 string `json:"keyword1"`
+	Keyword2 string `json:"keyword2"`
+	ClientID string `json:"client_id"`
+}
+
+type SimilarityAnalysisBatchResponse struct {
+	BatchID string `json:"batch_id"`
+}

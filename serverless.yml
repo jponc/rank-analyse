@@ -202,6 +202,18 @@ functions:
     environment:
       ZENSERP_API_KEY: ${self:custom.env.ZENSERP_API_KEY}
 
+  SimilarityAnalysisBatch:
+    handler: bin/SimilarityAnalysisBatch
+    events:
+      - http:
+          path: /similarity-analysis-batch
+          method: post
+          cors: true
+    timeout: 10
+    environment:
+      ZENSERP_API_KEY: ${self:custom.env.ZENSERP_API_KEY}
+      ZENSERP_BATCH_WEBHOOK_URL: ${ssm:/${self:service}/${self:provider.stage}/ZENSERP_BATCH_WEBHOOK_URL}
+
   # == SNS ==
   ProcessKeyword:
     handler: bin/ProcessKeyword

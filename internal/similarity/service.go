@@ -17,20 +17,23 @@ import (
 )
 
 type Service struct {
-	zenserpClient *zenserp.Client
-	locations     []string
-	country       string
+	zenserpClient          *zenserp.Client
+	locations              []string
+	country                string
+	zenserpBatchWebhookURL string
 }
 
 func NewService(
 	zenserpClient *zenserp.Client,
 	locations []string,
 	country string,
+	zenserpBatchWebhookURL string,
 ) *Service {
 	s := &Service{
-		zenserpClient: zenserpClient,
-		locations:     locations,
-		country:       country,
+		zenserpClient:          zenserpClient,
+		locations:              locations,
+		country:                country,
+		zenserpBatchWebhookURL: zenserpBatchWebhookURL,
 	}
 
 	return s
@@ -100,6 +103,57 @@ func (s *Service) SimilarityAnalysis(ctx context.Context, request events.APIGate
 		Keyword2Similarity: &keyword2SimilarityKeyword,
 		Locations:          s.locations,
 		Country:            s.country,
+	}
+
+	return lambdaresponses.Respond200(res)
+}
+
+func (s *Service) SimilarityAnalysisBatch(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	if s.zenserpClient == nil {
+		log.Errorf("zenserpClient not defined")
+		return lambdaresponses.Respond500()
+	}
+
+	if s.zenserpBatchWebhookURL == "" {
+		log.Errorf("zenserpBatchWebhookURL not defined")
+		return lambdaresponses.Respond500()
+	}
+
+	var req apischema.SimilarityAnalysisBatchRequest
+
+	err := json.Unmarshal([]byte(request.Body), &req)
+	if err != nil || req.Keyword1 == "" || req.Keyword2 == "" || req.ClientID == "" {
+		log.Errorf("failed to Unmarshal or error keywords")
+		return lambdaresponses.Respond400(fmt.Errorf("bad request"))
+	}
+
+	jobs := []zenserp.Job{}
+	keywords := []string{req.Keyword1, req.Keyword2}
+
+	for _, location := range s.locations {
+		for _, keyword := range keywords {
+
+			job := zenserp.Job{
+				Query:        keyword,
+				Num:          "100",
+				SearchEngine: "google.com",
+				Device:       "desktop",
+				Country:      s.country,
+				Location:     location,
+			}
+
+			jobs = append(jobs, job)
+		}
+	}
+
+	batchRes, err := s.zenserpClient.Batch(ctx, req.ClientID, s.zenserpBatchWebhookURL, jobs)
+	if err != nil {
+		log.Errorf("failed to request zenserp batch: %w", err)
+		return lambdaresponses.Respond500()
+	}
+
+	res := apischema.SimilarityAnalysisBatchResponse{
+		BatchID: batchRes.BatchID,
 	}
 
 	return lambdaresponses.Respond200(res)

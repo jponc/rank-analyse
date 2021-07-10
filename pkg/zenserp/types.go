@@ -18,3 +18,22 @@ type QueryResult struct {
 	Query      QueryInfo    `json:"query"`
 	ResulItems []ResultItem `json:"organic"`
 }
+
+type BatchRequest struct {
+	WebhookURL string `json:"webhook_url"`
+	Name       string `json:"name"`
+	Jobs       []Job  `json:"jobs"`
+}
+
+type BatchResult struct {
+	BatchID string `json:"id"`
+}
+
+type Job struct {
+	Query        string `json:"q"`
+	Num          string `json:"num"`
+	SearchEngine string `json:"search_engine"`
+	Device       string `json:"device"`
+	Country      string `json:"gl"`
+	Location     string `json:"location"`
+}
