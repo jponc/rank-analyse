@@ -230,12 +230,15 @@ functions:
 
   SimilarityAnalysisBatchStatus:
     handler: bin/SimilarityAnalysisBatchStatus
+    memorySize: 512
     events:
       - http:
           path: /similarity-analysis-batch-status
           method: post
           cors: true
     timeout: 30
+    environment:
+      ZENSERP_API_KEY: ${self:custom.env.ZENSERP_API_KEY}
 
 
   # == SNS ==

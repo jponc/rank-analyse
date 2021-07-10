@@ -1,11 +1,5 @@
 package zenserp
 
-import (
-	"encoding/json"
-
-	log "github.com/sirupsen/logrus"
-)
-
 type QueryInfo struct {
 	Query        string `json:"q"`
 	SearchEngine string `json:"search_engine"`
@@ -20,9 +14,20 @@ type ResultItem struct {
 	Description string `json:"description"`
 }
 
+type ResultItemWithoutDescription struct {
+	Position int    `json:"position"`
+	Title    string `json:"title"`
+	URL      string `json:"url"`
+}
+
 type QueryResult struct {
 	Query      QueryInfo    `json:"query"`
 	ResulItems []ResultItem `json:"organic"`
+}
+
+type QueryResultWithoutDescription struct {
+	Query      QueryInfo                      `json:"query"`
+	ResulItems []ResultItemWithoutDescription `json:"organic"`
 }
 
 type BatchRequest struct {
@@ -44,14 +49,9 @@ type Job struct {
 	Location     string `json:"location"`
 }
 
-func (r *ResultItem) UnmarshalJSON(data []byte) error {
-	var res ResultItem
-
-	err := json.Unmarshal(data, &res)
-	if err != nil {
-		log.Errorf("failed to unmarshal result item: %v", data)
-	}
-
-	r = &res
-	return nil
+type Batch struct {
+	ID      string                          `json:"id"`
+	Name    string                          `json:"name"`
+	State   string                          `json:"state"`
+	Results []QueryResultWithoutDescription `json:"jobs"`
 }

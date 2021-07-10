@@ -75,3 +75,12 @@ type ZenserpBatchWebhookRequest []zenserp.QueryResult
 type ZenserpBatchWebhookResponse struct {
 	Message string `json:"message"`
 }
+
+type SimilarityAnalysisBatchStatusRequest struct {
+	BatchID string `json:"batch_id"`
+}
+
+type SimilarityAnalysisBatchStatusResponse struct {
+	Keyword1Similarity *types.SimilarityKeyword `json:"keyword1_similarity"`
+	Keyword2Similarity *types.SimilarityKeyword `json:"keyword2_similarity"`
+}

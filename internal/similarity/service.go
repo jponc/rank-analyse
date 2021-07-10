@@ -159,6 +159,112 @@ func (s *Service) SimilarityAnalysisBatch(ctx context.Context, request events.AP
 	return lambdaresponses.Respond200(res)
 }
 
+func (s *Service) SimilarityAnalysisBatchStatus(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	if s.zenserpClient == nil {
+		log.Errorf("zenserpClient not defined")
+		return lambdaresponses.Respond500()
+	}
+
+	var req apischema.SimilarityAnalysisBatchStatusRequest
+
+	err := json.Unmarshal([]byte(request.Body), &req)
+	if err != nil || req.BatchID == "" {
+		log.Errorf("failed to Unmarshal or batchID missing: %w", err)
+		return lambdaresponses.Respond400(fmt.Errorf("bad request"))
+	}
+
+	b, err := s.zenserpClient.GetBatch(ctx, req.BatchID)
+	if err != nil || b.State != "notified" {
+		log.Errorf("failed to get batch: %w", err)
+		return lambdaresponses.Respond404(fmt.Errorf("failed to get batch: %s", req.BatchID))
+	}
+
+	similarityKeywords := s.buildSimilarityKeywordFromBatch(*b)
+	if len(similarityKeywords) != 2 {
+		log.Errorf("similarityKeywords are not 2: %d", len(similarityKeywords))
+		return lambdaresponses.Respond500()
+	}
+
+	res := apischema.SimilarityAnalysisBatchStatusResponse{
+		Keyword1Similarity: &similarityKeywords[0],
+		Keyword2Similarity: &similarityKeywords[1],
+	}
+
+	return lambdaresponses.Respond200(res)
+}
+
+func (s *Service) buildSimilarityKeywordFromBatch(batch zenserp.Batch) []types.SimilarityKeyword {
+	similarityKeywords := []types.SimilarityKeyword{}
+
+	type KeywordItem struct {
+		Title     string
+		URL       string
+		SeenCount int
+		Positions []int
+	}
+
+	keywordMap := map[string]map[string]KeywordItem{}
+
+	for _, result := range batch.Results {
+		keyword := result.Query.Query
+
+		if _, found := keywordMap[keyword]; !found {
+			keywordMap[keyword] = map[string]KeywordItem{}
+		}
+
+		for _, item := range result.ResulItems {
+			if itemRes, found := keywordMap[keyword][item.URL]; found {
+				itemRes.Positions = append(itemRes.Positions, item.Position)
+				itemRes.SeenCount++
+
+				keywordMap[keyword][item.URL] = itemRes
+			} else {
+				keywordMap[keyword][item.URL] = KeywordItem{
+					Title:     item.Title,
+					URL:       item.URL,
+					SeenCount: 1,
+					Positions: []int{item.Position},
+				}
+			}
+		}
+	}
+
+	for k, r := range keywordMap {
+		results := []types.SimilarityResult{}
+
+		for _, i := range r {
+			if i.Title == "" {
+				continue
+			}
+
+			// Compute for ave position
+			sum := 0
+			totalCount := len(i.Positions)
+			for _, p := range i.Positions {
+				sum = sum + p
+			}
+
+			results = append(results, types.SimilarityResult{
+				SeenCount:   i.SeenCount,
+				Title:       i.Title,
+				Link:        i.URL,
+				AvePosition: float32(sum) / float32(totalCount),
+			})
+		}
+
+		sort.SliceStable(results, func(i, j int) bool {
+			return results[i].AvePosition < results[j].AvePosition
+		})
+
+		similarityKeywords = append(similarityKeywords, types.SimilarityKeyword{
+			Keyword: k,
+			Results: results,
+		})
+	}
+
+	return similarityKeywords
+}
+
 func (s *Service) buildSimilarityKeyword(keyword string, locationResult map[string]*zenserp.QueryResult) types.SimilarityKeyword {
 	// title to similarity result map
 	resultsMap := map[string]*types.SimilarityResult{}

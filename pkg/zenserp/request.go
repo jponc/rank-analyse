@@ -19,6 +19,7 @@ const (
 	searchPath         = "api/v2/search?q=%s&num=%d&search_engine=%s&device=%s"
 	searchLocationPath = "api/v2/search?q=%s&num=%d&search_engine=%s&device=%s&gl=%s&location=%s"
 	batchPath          = "api/v1/batches"
+	getBatchPath       = "api/v1/batches/%s"
 )
 
 func (c *Client) do(ctx context.Context, method string, endpoint string, body []byte, contentType string) ([]byte, error) {

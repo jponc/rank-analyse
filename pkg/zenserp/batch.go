@@ -6,7 +6,6 @@ import (
 )
 
 func (c *Client) Batch(ctx context.Context, name, webhookUrl string, jobs []Job) (*BatchResult, error) {
-
 	batchRequest := &BatchRequest{
 		WebhookURL: webhookUrl,
 		Name:       name,
@@ -21,4 +20,17 @@ func (c *Client) Batch(ctx context.Context, name, webhookUrl string, jobs []Job)
 	}
 
 	return &batchResult, nil
+}
+
+func (c *Client) GetBatch(ctx context.Context, batchID string) (*Batch, error) {
+
+	var b Batch
+
+	endpoint := fmt.Sprintf(getBatchPath, batchID)
+	err := c.getJSON(ctx, endpoint, &b)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get batch: %w", err)
+	}
+
+	return &b, nil
 }
