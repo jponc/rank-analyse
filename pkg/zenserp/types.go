@@ -1,5 +1,11 @@
 package zenserp
 
+import (
+	"encoding/json"
+
+	log "github.com/sirupsen/logrus"
+)
+
 type QueryInfo struct {
 	Query        string `json:"q"`
 	SearchEngine string `json:"search_engine"`
@@ -36,4 +42,16 @@ type Job struct {
 	Device       string `json:"device"`
 	Country      string `json:"gl"`
 	Location     string `json:"location"`
+}
+
+func (r *ResultItem) UnmarshalJSON(data []byte) error {
+	var res ResultItem
+
+	err := json.Unmarshal(data, &res)
+	if err != nil {
+		log.Errorf("failed to unmarshal result item: %v", data)
+	}
+
+	r = &res
+	return nil
 }

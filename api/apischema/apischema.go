@@ -1,6 +1,9 @@
 package apischema
 
-import "github.com/jponc/rank-analyse/internal/types"
+import (
+	"github.com/jponc/rank-analyse/internal/types"
+	"github.com/jponc/rank-analyse/pkg/zenserp"
+)
 
 type HealthcheckResponse struct {
 	Status string `json:"status"`
@@ -66,4 +69,9 @@ type SimilarityAnalysisBatchRequest struct {
 
 type SimilarityAnalysisBatchResponse struct {
 	BatchID string `json:"batch_id"`
+}
+
+type ZenserpBatchWebhookRequest []zenserp.QueryResult
+type ZenserpBatchWebhookResponse struct {
+	Message string `json:"message"`
 }

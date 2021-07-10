@@ -214,6 +214,30 @@ functions:
       ZENSERP_API_KEY: ${self:custom.env.ZENSERP_API_KEY}
       ZENSERP_BATCH_WEBHOOK_URL: ${ssm:/${self:service}/${self:provider.stage}/ZENSERP_BATCH_WEBHOOK_URL}
 
+  ZenserpBatchWebhook:
+    handler: bin/ZenserpBatchWebhook
+    events:
+      - http:
+          path: /zenserp-batch-webhook
+          method: post
+          cors: true
+    timeout: 30
+    environment:
+      PUSHER_KEY: ${self:custom.env.PUSHER_KEY}
+      PUSHER_APP_ID: ${self:custom.env.PUSHER_APP_ID}
+      PUSHER_SECRET: ${self:custom.env.PUSHER_SECRET}
+      PUSHER_CLUSTER: ${self:custom.env.PUSHER_CLUSTER}
+
+  SimilarityAnalysisBatchStatus:
+    handler: bin/SimilarityAnalysisBatchStatus
+    events:
+      - http:
+          path: /similarity-analysis-batch-status
+          method: post
+          cors: true
+    timeout: 30
+
+
   # == SNS ==
   ProcessKeyword:
     handler: bin/ProcessKeyword
@@ -255,6 +279,10 @@ custom:
     ZENSERP_API_KEY: ${ssm:/${self:service}/${self:provider.stage}/ZENSERP_API_KEY}
     TEXTRAZOR_API_KEY: ${ssm:/${self:service}/${self:provider.stage}/TEXTRAZOR_API_KEY}
     S3_RESULTS_BUCKET_NAME: ${ssm:/${self:service}/${self:provider.stage}/S3_RESULTS_BUCKET_NAME}
+    PUSHER_KEY: ${ssm:/${self:service}/${self:provider.stage}/PUSHER_KEY}
+    PUSHER_SECRET: ${ssm:/${self:service}/${self:provider.stage}/PUSHER_SECRET}
+    PUSHER_CLUSTER: ${ssm:/${self:service}/${self:provider.stage}/PUSHER_CLUSTER}
+    PUSHER_APP_ID: ${ssm:/${self:service}/${self:provider.stage}/PUSHER_APP_ID}
 
   vpc:
     securityGroupIds: ${ssm:/uptactics/${self:provider.stage}/DEFAULT_SECURITY_GROUP}
